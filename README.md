@@ -81,7 +81,7 @@ GenisysPro still has a long way to go. We are pleased to receive help from every
  
  
 
- - [x] Add pistons+sticky pistons(not completely visible)
+- [x] Add pistons+sticky pistons(not completely visible)
  
  - [x] Add ender crystal(not functional,but you can spawn ender crystals)
  
