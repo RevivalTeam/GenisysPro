@@ -76,14 +76,19 @@ TODO List
 
 GenisysPro still has a long way to go. We are pleased to receive help from everybody and welcome contributors.  
  
- Items TODO list
- ---------------
+ Items TODO list:
+ 
+ 
+ 
+
  - [x] Add pistons+sticky pistons(not completely visible)
  - [x] Add ender crystal(not functional,but you can spawn ender crystals)
  - [ ] Add magma block etc.
  - [ ] Add observer,leash etc.
+
 Help & Support
--------------
+
+------------
 [Official Doxygen-generated Documentation](https://genisyspro.github.io/docs/)
 
 Other Tools
