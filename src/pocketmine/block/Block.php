@@ -201,6 +201,8 @@ class Block extends Position implements BlockIds, Metadatable{
 			self::$list[self::END_PORTAL_FRAME] = EndPortalFrame::class;
 			self::$list[self::END_STONE] = EndStone::class;
 
+
+			self::$list[self::END_GATEWAY] = EndGateway::class;
 			self::$list[self::END_STONE_BRICKS] = EndStoneBricks::class;
 			self::$list[self::END_ROD] = EndRod::class;
 
@@ -319,7 +321,8 @@ class Block extends Position implements BlockIds, Metadatable{
 			self::$list[self::INVISIBLE_BEDROCK] = InvisibleBedrock::class;
 			self::$list[self::HOPPER_BLOCK] = Hopper::class;
 			self::$list[self::DRAGON_EGG] = DragonEgg::class;
-			self::$list[self::COMMAND_BLOCK] = CommandBlock::class;			
+			self::$list[self::COMMAND_BLOCK] = CommandBlock::class;
+    self::$list[self::SHULKER_BOX] = ShulkerBox::class;
 			self::$list[self::PISTON] = Piston::class;				
 			self::$list[self::STICKY_PISTON] = StickyPiston::class;		
 
