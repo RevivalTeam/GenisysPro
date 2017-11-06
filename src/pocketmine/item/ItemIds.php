@@ -221,7 +221,7 @@ interface ItemIds extends BlockIds {
 	const RAW_MUTTON = 423;
 	const COOKED_MUTTON = 424;
 	//const BANNER = 425;
-	//const END_CRYSTAL = 426;
+	const END_CRYSTAL = 426;
 	const SPRUCE_DOOR = 427;
 	const BIRCH_DOOR = 428;
 	const JUNGLE_DOOR = 429;
