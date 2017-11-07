@@ -264,6 +264,8 @@ class Block extends Position implements BlockIds, Metadatable{
 			self::$list[self::STONECUTTER] = Stonecutter::class;
 			self::$list[self::GLOWING_OBSIDIAN] = GlowingObsidian::class;
 			self::$list[self::NETHER_REACTOR] = NetherReactor::class;
+n::class;
+			self::$list[self::OBSERVER] = Observer::class;
 			self::$list[self::CONCRETE] = Concrete::class;
 			self::$list[self::CONCRETE_POWDER] = ConcretePowder::class;
 			
