@@ -202,6 +202,7 @@ class Block extends Position implements BlockIds, Metadatable{
 			self::$list[self::END_STONE] = EndStone::class;
 			self::$list[self::END_GATEWAY] = EndGateway::class;
 			self::$list[self::END_STONE_BRICKS] = EndStoneBricks::class;
+			self::$list[self::MAGMA_BLOCK] = MagmaBlock::class;
 			self::$list[self::END_ROD] = EndRod::class;
 
 			self::$list[self::PURPUR] = Purpur::class;
@@ -315,6 +316,9 @@ class Block extends Position implements BlockIds, Metadatable{
 			self::$list[self::DROPPER] = Dropper::class;
 			self::$list[self::POWERED_REPEATER_BLOCK] = PoweredRepeater::class;
 			self::$list[self::UNPOWERED_REPEATER_BLOCK] = UnpoweredRepeater::class;
+			self::$list[self::POWERED_COMPARATOR] = PoweredComparator::class;				
+			self::$list[self::UNPOWERED_COMPARATOR] = UnpoweredComparator::class;		
+
 			self::$list[self::CAULDRON_BLOCK] = Cauldron::class;
 			self::$list[self::INVISIBLE_BEDROCK] = InvisibleBedrock::class;
 			self::$list[self::HOPPER_BLOCK] = Hopper::class;
