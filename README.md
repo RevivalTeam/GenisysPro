@@ -85,7 +85,7 @@ GenisysPro still has a long way to go. We are pleased to receive help from every
  
  -[x] Add ender crystal(not functional,but you can spawn ender crystals)
  
- - [ ] Add magma block etc.
+ - [ ] Add bone block,red nether brick etc.
  
  - [ ] Add observer,leash etc.
  
