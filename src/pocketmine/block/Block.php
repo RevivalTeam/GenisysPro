@@ -160,6 +160,7 @@ class Block extends Position implements BlockIds, Metadatable{
 			self::$list[self::CLAY_BLOCK] = Clay::class;
 			self::$list[self::SUGARCANE_BLOCK] = Sugarcane::class;
 
+			self::$list[self::JUKEBOX] = Jukebox::class;
 			self::$list[self::FENCE] = Fence::class;
 			self::$list[self::PUMPKIN] = Pumpkin::class;
 			self::$list[self::NETHERRACK] = Netherrack::class;
@@ -200,11 +201,14 @@ class Block extends Position implements BlockIds, Metadatable{
 			self::$list[self::END_PORTAL] = EndPortal::class;
 			self::$list[self::END_PORTAL_FRAME] = EndPortalFrame::class;
 			self::$list[self::END_STONE] = EndStone::class;
-			self::$list[self::END_GATEWAY] = EndGateway::class;
 			self::$list[self::END_STONE_BRICKS] = EndStoneBricks::class;
-			self::$list[self::MAGMA_BLOCK] = MagmaBlock::class;
 			self::$list[self::END_ROD] = EndRod::class;
+			self::$list[self::END_GATEWAY] = EndGateway::class;
 
+			self::$list[self::MAGMA_BLOCK] = MagmaBlock::class;
+			self::$list[self::RED_NETHER_BRICK] = RedNetherBrick::class;
+			self::$list[self::RED_NETHER_WART_BLOCK] = RedNetherWart::class;
+			self::$list[self::BONE_BLOCK] = BoneBlock::class;
 			self::$list[self::PURPUR] = Purpur::class;
 			self::$list[self::PURPUR_STAIRS] = PurpurStairs::class;
 

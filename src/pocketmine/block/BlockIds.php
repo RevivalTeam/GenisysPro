@@ -137,6 +137,7 @@ interface BlockIds {
 	const REEDS = 83;
 	const SUGARCANE_BLOCK = 83;
 
+	const JUKEBOX = 84;
 	const FENCE = 85;
 	const PUMPKIN = 86;
 	const NETHERRACK = 87;
@@ -304,9 +305,9 @@ interface BlockIds {
 	const END_ROD = 208;
 	const END_GATEWAY = 209;
 	const MAGMA_BLOCK = 213;
-	const NETHER_WART_BLOCK_ = 214;
+	const RED_NETHER_WART_BLOCK = 214;
 	const RED_NETHER_BRICK = 215;	
- 	const BONE_BLOCK_ = 216;
+ 	const BONE_BLOCK = 216;
 
 	const SHULKER_BOX = 218;
 	const PURPLE_GLAZED_TERRACOTTA = 219;
