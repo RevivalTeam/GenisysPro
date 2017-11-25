@@ -44,7 +44,7 @@ Game versions supported by `master` branch:
 
 Get GenisysPro
 -------------
-* Download the latest code from [GitHub](https://genisyspro.github.io/GenisysPro/GenisysPro.phar).  
+* Download the latest code from [GitHub](https://genisyspro.github.io/GenisysPro/GenisysPro.phar). or https://github.com/WakeUpPocketmine/GenisysPro/releases
 * Get [PHP binaries](https://genisys.pro/info/download/) and other necessary components.
 * Installation instructions can be found in the [Wiki](https://github.com/GenisysPro/GenisysPro/wiki).
 
