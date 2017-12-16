@@ -81,13 +81,13 @@ GenisysPro still has a long way to go. We are pleased to receive help from every
  
  
 
--[x] Add pistons+sticky pistons(not completely visible)
+- [x] Add pistons+sticky pistons(not completely visible)
  
- -[x] Add ender crystal(not functional,but you can spawn ender crystals)
+ - [x] Add ender crystal(not functional,but you can spawn one ender crystal)
  
- - [ ] Add bone block,red nether brick etc.
+ - [x] Add bone block,red nether brick etc.
  
- - [ ] Add observer,leash etc.
+ - [x] Add observer,leash etc.(not leash)
  
 
 Help & Support
