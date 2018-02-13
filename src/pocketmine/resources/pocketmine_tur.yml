@@ -1,0 +1,193 @@
+# Turanic için ana yapılandırma dosyası
+# Bu ayarlar, server.properties içine dahil edilemeyen ayarlardır.
+# Bu ayarlardan bazıları güvenlidir, bazıları yanlış değiştirildiğinde sunucunuzu parçalayabilir
+# Yeni ayarlar/varsayılanlar, yükseltirken bu dosyada otomatik olarak görünmeyecektir.
+
+settings:
+ #Sunucu tarafı yerelleştirme için üç harfli dil kodu
+ #Dil kodunuzu kontrol edin https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes
+ language: "tur"
+ #Tüm yazılar sunucu diline göre ayarlanması için. Cihaz dillerini devre dışı bırakır.
+ force-language: false
+ #Sunucu kapandığı zaman çıkacak yazı
+ shutdown-message: "Sunucu kapandı"
+ #Pluginlerin Query ile listelenmesine izin verir
+ query-plugins: true
+ #Bir eklenti onaylanmamış API yöntemlerini kullandığında konsolda mesaj gösterir
+ deprecated-verbose: true
+ #Varsayılan olarak eklenti ve çekirdek profil oluşturmayı etkinleştir
+ enable-profiling: false
+ #Yalnızca tick ölçümü altında veya verilen değere eşit olduğunda sonuçları ekler (varsayılan 20)
+ profile-report-trigger: 20
+ #AsyncTask worker sayısı
+ #Eklentinin eşzamanlı olmayan işler, dünya oluşturma, sıkıştırma ve web iletişimi için kullanılır.
+ #Bunu yaklaşık çekirdek sayısına ayarlayın.
+ #auto olarak ayarlanırsa, çekirdek sayısını saptamaya çalışır (veya 2'yi kullanır)
+ async-workers: auto
+
+memory:
+ #Global soft memory limit in megabytes. Set to 0 to disable
+ #This will trigger low-memory-triggers and fire an event to free memory when the usage goes over this
+ global-limit: 0
+
+ #Main thread soft memory limit in megabytes. Set to 0 to disable
+ #This will trigger low-memory-triggers and fire an event to free memory when the usage goes over this
+ main-limit: 0
+
+ #Main thread hard memory limit in megabytes. Set to 0 to disable
+ #This will stop the server when the limit is surpassed
+ main-hard-limit: 1024
+
+ #AsyncWorker threads' hard memory limit in megabytes. Set to 0 to disable
+ #This will crash the task currently executing on the worker if the task exceeds the limit
+ #NOTE: THIS LIMIT APPLIES PER WORKER, NOT TO THE WHOLE PROCESS.
+ async-worker-hard-limit: 1024
+
+ #Period in ticks to check memory (default 1 second)
+ check-rate: 20
+
+ #Continue firing low-memory-triggers and event while on low memory
+ continuous-trigger: true
+
+ #Only if memory.continuous-trigger is enabled. Specifies the rate in memory.check-rate steps (default 30 seconds)
+ continuous-trigger-rate: 30
+
+ #Settings controlling memory dump handling.
+ memory-dump:
+  #Dump memory from async workers as well as the main thread. If you have issues with segfaults when dumping memory, disable this setting.
+  dump-async-worker: true
+
+ garbage-collection:
+  #Period in ticks to fire the garbage collector manually (default 30 minutes), set to 0 to disable
+  #This only affect the main thread. Other threads should fire their own collections
+  period: 36000
+
+  #Fire asynchronous tasks to collect garbage from workers
+  collect-async-worker: true
+
+  #Trigger on low memory
+  low-memory-trigger: true
+
+ max-chunks:
+  #Maximum render distance per player when low memory is triggered
+  chunk-radius: 4
+
+  #Do chunk garbage collection on trigger
+  trigger-chunk-collect: true
+
+  #Trigger on low memory
+  low-memory-trigger: true
+
+ world-caches:
+  disable-chunk-cache: true
+  low-memory-trigger: true
+
+
+network:
+ #Threshold for batching packets, in bytes. Only these packets will be compressed
+ #Set to 0 to compress everything, -1 to disable.
+ batch-threshold: 256
+ #Compression level used when sending batched packets. Higher = Uses More CPU, Less = More Bandwidth Usage
+ compression-level: 2
+ #Use AsyncTasks for compression. Adds half/one tick delay, less CPU load on main thread
+ async-compression: true
+ #Experimental, only for Windows. Tries to use UPnP to automatically port forward
+ upnp-forwarding: false
+ #Maximum size in bytes of packets sent over the network (default 1492 bytes). Packets larger than this will be
+ #fragmented or split into smaller parts. Clients can request MTU sizes up to but not more than this number.
+ max-mtu-size: 1492
+
+debug:
+ #To enable assertion execution, set zend.assertions in your php.ini to 1
+ assertions:
+  #Warn if assertions are enabled in php.ini, due to assertions may impact on runtime performance if enabled.
+  warn-if-enabled: true
+  #Enable throwing exceptions when assertions fail, will allow obtaining more detailed information on the failed assertion, but may cause a server crash.
+  #If set to false, a warning will be raised instead of throwing an exception.
+  throw-exception: false
+ #If > 1, it will show debug messages in the console
+ level: 1
+ #Enables /status, /gc
+ commands: true
+
+player:
+ #Choose whether to enable player data saving.
+ save-player-data: true
+ anti-cheat:
+  #If false, will try to prevent speed and noclip cheats. May cause movement issues with some blocks which are not yet properly implemented.
+  allow-movement-cheats: false
+
+level-settings:
+ #The default format that levels will use when created
+ default-format: pmanvil
+ #Automatically change levels tick rate to maintain 20 ticks per second
+ auto-tick-rate: false
+ auto-tick-rate-limit: 20
+ #Sets the base tick rate (1 = 20 ticks per second, 2 = 10 ticks per second, etc.)
+ base-tick-rate: 1
+ #Tick all players each tick even when other settings disallow this.
+ always-tick-players: false
+
+chunk-sending:
+ #To change server normal render distance, change view-distance in server.properties.
+ #Amount of chunks sent to players per tick
+ per-tick: 2
+ #Radius of chunks that need to be sent before spawning the player
+ spawn-radius: 4
+ #Use AsyncTasks for serializing chunks for sending.
+ async-chunk-request: false
+
+chunk-ticking:
+ #Max amount of chunks processed each tick
+ per-tick: 16
+ #Radius of chunks around a player to tick
+ tick-radius: 3
+ light-updates: false
+ clear-tick-list: true
+ #IDs of blocks not to perform random ticking on.
+ disable-block-ticking:
+  #- 2 # grass
+
+chunk-generation:
+ #Max. amount of chunks in the waiting queue to be generated
+ queue-size: 2
+ #Max. amount of chunks in the waiting queue to be populated
+ population-queue-size: 2
+
+ticks-per:
+ animal-spawns: 400
+ monster-spawns: 1
+ autosave: 6000
+ cache-cleanup: 900
+spawn-limits:
+  monsters: 70
+  animals: 15
+  water-animals: 5
+  ambient: 15
+
+commands:
+ #Here you can customize server commands
+ #Specify command names to override the default set here.
+ #If no custom value is defined for a command, the default will be used.
+ #NOTE: Some commands cannot be disabled here, such as the important ones like /stop, /reload, etc.
+ default: true
+ #Set override values per command here
+ #For example, uncommenting the below will disable /plugins and /version
+ #version: false
+ #plugins: false
+
+timings:
+ #Choose the host to use for viewing your timings results.
+ host: timings.pmmp.io
+
+aliases:
+ #Examples:
+ #showtheversion: version
+ #savestop: [save-all, stop]
+
+worlds:
+ #These settings will override the generator set in server.properties and allows loading multiple levels
+ #Example:
+ #world:
+ # seed: 404
+ # generator: FLAT:2;7,59x1,3x3,2;1;decoration(treecount=80 grasscount=45)

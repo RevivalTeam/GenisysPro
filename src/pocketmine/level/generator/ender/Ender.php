@@ -3,17 +3,17 @@
 namespace pocketmine\level\generator\ender;
 
 use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 use pocketmine\level\ChunkManager;
 use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\generator\ender\populator\EnderPilar;
 use pocketmine\level\generator\Generator;
 use pocketmine\level\generator\noise\Simplex;
 use pocketmine\level\generator\populator\Populator;
-use pocketmine\math\Vector3 as Vector3;
+use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
 
-class Ender extends Generator
-{
+class Ender extends Generator{
 
     /** @var Populator[] */
     private $populators = [];
@@ -34,15 +34,13 @@ class Ender extends Generator
     private static $GAUSSIAN_KERNEL = null;
     private static $SMOOTH_SIZE = 2;
 
-    public function __construct(array $options = [])
-    {
+    public function __construct(array $options = []){
         if (self::$GAUSSIAN_KERNEL === null) {
             self::generateKernel();
         }
     }
 
-    private static function generateKernel()
-    {
+    private static function generateKernel(){
         self::$GAUSSIAN_KERNEL = [];
 
         $bellSize = 1 / self::$SMOOTH_SIZE;
@@ -59,23 +57,19 @@ class Ender extends Generator
         }
     }
 
-    public function getName(): string
-    {
+    public function getName(): string{
         return "Ender";
     }
 
-    public function getWaterHeight(): int
-    {
+    public function getWaterHeight(): int{
         return $this->waterHeight;
     }
 
-    public function getSettings()
-    {
+    public function getSettings() : array{
         return [];
     }
 
-    public function init(ChunkManager $level, Random $random)
-    {
+    public function init(ChunkManager $level, Random $random){
         $this->level = $level;
         $this->random = $random;
         $this->random->setSeed($this->level->getSeed());
@@ -87,8 +81,7 @@ class Ender extends Generator
         $this->populators[] = $pilar;
     }
 
-    public function generateChunk($chunkX, $chunkZ)
-    {
+    public function generateChunk(int $chunkX, int $chunkZ){
         $this->random->setSeed(0xa6fe78dc ^ ($chunkX << 8) ^ $chunkZ ^ $this->level->getSeed());
 
         $noise = Generator::getFastNoise3D($this->noiseBase, 16, 128, 16, 4, 8, 4, $chunkX * 16, 0, $chunkZ * 16);
@@ -100,7 +93,7 @@ class Ender extends Generator
 
                 $biome = Biome::getBiome(Biome::END);
                 $biome->setGroundCover([
-                    Block::get(Block::OBSIDIAN, 0)
+                    BlockFactory::get(Block::OBSIDIAN, 0)
 
                 ]);
                 $chunk->setBiomeId($x, $z, $biome->getId());
@@ -132,8 +125,7 @@ class Ender extends Generator
         }
     }
 
-    public function populateChunk($chunkX, $chunkZ)
-    {
+    public function populateChunk(int $chunkX, int $chunkZ){
         $this->random->setSeed(0xa6fe78dc ^ ($chunkX << 8) ^ $chunkZ ^ $this->level->getSeed());
         foreach ($this->populators as $populator) {
             $populator->populate($this->level, $chunkX, $chunkZ, $this->random);
@@ -144,8 +136,7 @@ class Ender extends Generator
         $biome->populateChunk($this->level, $chunkX, $chunkZ, $this->random);
     }
 
-    public function getSpawn()
-    {
+    public function getSpawn() : Vector3{
         return new Vector3(48, 128, 48);
     }
 

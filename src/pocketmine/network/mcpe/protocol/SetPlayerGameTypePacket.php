@@ -19,37 +19,24 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-
-class SetPlayerGameTypePacket extends DataPacket {
-
+class SetPlayerGameTypePacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::SET_PLAYER_GAME_TYPE_PACKET;
 
+	/** @var int */
 	public $gamemode;
 
-	/**
-	 *
-	 */
-	public function decode(){
+	protected function decodePayload(){
 		$this->gamemode = $this->getVarInt();
 	}
 
-	/**
-	 *
-	 */
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putVarInt($this->gamemode);
-	}
-
-	/**
-	 * @return PacketName|string
-	 */
-	public function getName(){
-		return "SetPlayerGameTypePacket";
 	}
 
 }

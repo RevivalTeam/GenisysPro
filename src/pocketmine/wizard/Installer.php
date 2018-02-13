@@ -30,7 +30,7 @@ use pocketmine\utils\Config;
 use pocketmine\utils\Utils;
 
 class Installer {
-	const DEFAULT_NAME = "Minecraft: PE Server";
+	const DEFAULT_NAME = "Turanic Server";
 	const DEFAULT_PORT = 19132;
 	const DEFAULT_MEMORY = 512;
 	const DEFAULT_PLAYERS = 20;
@@ -49,6 +49,9 @@ class Installer {
 
 	private $defaultLang;
 
+	/** @var  InstallerLang $lang */
+	private $lang;
+
 	/**
 	 * Installer constructor.
 	 */
@@ -60,7 +63,7 @@ class Installer {
 	 * @return bool
 	 */
 	public function run(){
-		echo "[*] GenisysPro set-up wizard\n";
+		echo "[*] Turanic set-up wizard\n";
 		echo "[*] Please select a language:\n";
 		foreach(InstallerLang::$languages as $short => $native){
 			echo " $native => $short\n";
@@ -139,8 +142,7 @@ LICENSE;
 		$config = new Config(\pocketmine\DATA . "server.properties", Config::PROPERTIES);
 		echo "[?] " . $this->lang->name_your_server . " (" . self::DEFAULT_NAME . "): ";
 		$server_name = $this->getInput(self::DEFAULT_NAME);
-		$config->set("server-name", $server_name);
-		$config->set("motd", $server_name); //MOTD is now used as server name
+		$config->set("motd", $server_name);
 		echo "[*] " . $this->lang->port_warning . "\n";
 		do{
 			echo "[?] " . $this->lang->server_port . " (" . self::DEFAULT_PORT . "): ";
@@ -153,7 +155,7 @@ LICENSE;
 
 		echo "[*] " . $this->lang->online_mode_info . "\n";
 		echo "[?] " . $this->lang->online_mode . " (y/N): ";
-		$config->set("online-mode", strtolower($this->getInput("y")) == "y");
+		$config->set("xbox-auth", strtolower($this->getInput("y")) == "y");
 
 		echo "[?] " . $this->lang->level_name . " (" . self::DEFAULT_LEVEL_NAME . "): ";
 		$config->set("level-name", $this->getInput(self::DEFAULT_LEVEL_NAME));
@@ -286,6 +288,4 @@ LICENSE;
 
 		return $input === "" ? $default : $input;
 	}
-
-
 }

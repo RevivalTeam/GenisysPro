@@ -2,22 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
-*/
+ */
 
 namespace pocketmine\entity;
 
@@ -33,7 +34,7 @@ abstract class Creature extends Living {
 	 *
 	 * @return bool
 	 */
-	public function onUpdate($tick){
+	public function onUpdate(int $tick){
 		if(!$this instanceof Human){
 			if($this->attackingTick > 0){
 				$this->attackingTick--;
@@ -54,7 +55,7 @@ abstract class Creature extends Living {
 				$friction = 1 - $this->drag;
 
 				if($this->onGround and (abs($this->motionX) > 0.00001 or abs($this->motionZ) > 0.00001)){
-					$friction = $this->getLevel()->getBlock($this->temporalVector->setComponents((int) floor($this->x), (int) floor($this->y - 1), (int) floor($this->z) - 1))->getFrictionFactor() * $friction;
+					$friction = $this->getLevel()->getBlock($this->temporalVector->setComponents($this->x, $this->y - 1, $this->z - 1))->getFrictionFactor() * $friction;
 				}
 
 				$this->motionX *= $friction;
@@ -84,14 +85,12 @@ abstract class Creature extends Living {
 		return false;
 	}
 
-	/**
-	 * @param float             $damage
-	 * @param EntityDamageEvent $source
-	 *
-	 * @return bool|void
-	 */
-	public function attack($damage, EntityDamageEvent $source){
-		parent::attack($damage, $source);
+    /**
+     * @param EntityDamageEvent $source
+     * @return bool|void
+     */
+	public function attack(EntityDamageEvent $source){
+		parent::attack($source);
 		if(!$source->isCancelled() and $source->getCause() == EntityDamageEvent::CAUSE_ENTITY_ATTACK){
 			$this->attackingTick = 20;
 		}

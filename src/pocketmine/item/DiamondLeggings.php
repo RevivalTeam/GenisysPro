@@ -27,10 +27,9 @@ class DiamondLeggings extends Armor {
 	 * DiamondLeggings constructor.
 	 *
 	 * @param int $meta
-	 * @param int $count
 	 */
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::DIAMOND_LEGGINGS, $meta, $count, "Diamond Leggings");
+	public function __construct(int $meta = 0){
+		parent::__construct(self::DIAMOND_LEGGINGS, $meta, "Diamond Leggings");
 	}
 
 	/**
@@ -57,7 +56,7 @@ class DiamondLeggings extends Armor {
 	/**
 	 * @return int
 	 */
-	public function getArmorValue(){
+	public function getDefensePoints() : int{
 		return 6;
 	}
 

@@ -1,20 +1,21 @@
 #
-#   _____            _               _____           
-#  / ____|          (_)             |  __ \          
-# | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
-# | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+#   _____            _               _____
+#  / ____|          (_)             |  __ \
+# | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+# | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
 # | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
-#  \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
-#                          __/ |                    
-#                         |___/                     
+#  \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+#                           __/ |
+#                          |___/
 #
 #
 #
-#Genisys進階配置檔案
+#
+#GenisysPro進階配置檔案
 
 #配置檔案版本
 config:
- version: 28
+ version: 30
  
 level:
  #設定是否變換天氣
@@ -45,10 +46,8 @@ player:
  
 developer:
   #是否允許伺服器讀取檔案夾插件(源碼)
-  #建議關閉
   folder-plugin-loader: true
   #是否允許伺服器讀取不兼容的API插件
-  #建議關閉
   load-incompatible-api: true
 
 nether:
@@ -64,6 +63,8 @@ ender:
  level-name: "ender"
  
 server:
+ #Shows Turanic Information in Settings Window
+ show-turanic: true
  #是否允許生成鐵傀儡
  allow-iron-golem: false
  #是否允許生成雪傀儡
@@ -78,14 +79,10 @@ server:
  player-msg-type: 0
  login-msg: "§3@player 加入了遊戲"
  logout-msg: "§3@player 退出了遊戲"
- #是否限制創造某些功能(禁止丟物品, 禁止操作箱子等等)
- limited-creative: false
  #是否開啟方塊破壞粒子
  destroy-block-particle: true
  #是否允許噴濺型藥水
  allow-splash-potion: true
- #是否啟用進階指令選擇器
- advanced-command-selector: false
  #是否讀取ResourcePackManager
  enable-resource: false
  #是否開啟海綿的吸水功能
@@ -99,18 +96,6 @@ enchantment:
  #是否啟用計算附魔等級(計算書架數量)，可能造成伺服器延遲
  #如果不啟用本項, 附魔等級將在0-15間隨機選取
  count-bookshelf: false
-
-redstone:
- ##############################
- #######是否開啟紅石系統#######
- ##############################
- #如果不改為true將無法使用紅石#
- ##############################
- enable: false
- #是否允許頻率脈沖
- frequency-pulse: false
- #設定脈沖頻率, 預設: 1s
- pulse-frequency: 1
  
 dserver:
  #多服統統一人數

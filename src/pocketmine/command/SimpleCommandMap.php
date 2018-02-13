@@ -2,34 +2,35 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
  *
 */
 
 namespace pocketmine\command;
 
-use pocketmine\command\defaults\BanCidByNameCommand;
-use pocketmine\command\defaults\BanCidCommand;
 use pocketmine\command\defaults\BanCommand;
-use pocketmine\command\defaults\BanIpByNameCommand;
 use pocketmine\command\defaults\BanIpCommand;
 use pocketmine\command\defaults\BanListCommand;
 use pocketmine\command\defaults\BiomeCommand;
 use pocketmine\command\defaults\CaveCommand;
 use pocketmine\command\defaults\ChunkInfoCommand;
+use pocketmine\command\defaults\ClearInventoryCommand;
 use pocketmine\command\defaults\DefaultGamemodeCommand;
 use pocketmine\command\defaults\DeopCommand;
 use pocketmine\command\defaults\DifficultyCommand;
@@ -47,10 +48,10 @@ use pocketmine\command\defaults\ListCommand;
 use pocketmine\command\defaults\LvdatCommand;
 use pocketmine\command\defaults\MeCommand;
 use pocketmine\command\defaults\OpCommand;
-use pocketmine\command\defaults\PardonCidCommand;
 use pocketmine\command\defaults\PardonCommand;
 use pocketmine\command\defaults\PardonIpCommand;
 use pocketmine\command\defaults\ParticleCommand;
+use pocketmine\command\defaults\PingCommand;
 use pocketmine\command\defaults\PluginsCommand;
 use pocketmine\command\defaults\ReloadCommand;
 use pocketmine\command\defaults\SaveCommand;
@@ -76,6 +77,7 @@ use pocketmine\command\defaults\VersionCommand;
 use pocketmine\command\defaults\WeatherCommand;
 use pocketmine\command\defaults\WhitelistCommand;
 use pocketmine\command\defaults\XpCommand;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -116,74 +118,69 @@ class SimpleCommandMap implements CommandMap {
 	}
 
 	private function setDefaultCommands(){
-		$this->register("pocketmine", new WeatherCommand("weather"));
-
-		$this->register("pocketmine", new BanCidCommand("bancid"));
-		$this->register("pocketmine", new PardonCidCommand("pardoncid"));
-		$this->register("pocketmine", new BanCidByNameCommand("bancidbyname"));
-		$this->register("pocketmine", new BanIpByNameCommand("banipbyname"));
-
-		$this->register("pocketmine", new ExtractPharCommand("extractphar"));
-		$this->register("pocketmine", new ExtractPluginCommand("ep"));
-		$this->register("pocketmine", new MakePluginCommand("mp"));
-		$this->register("pocketmine", new MakeServerCommand("ms"));
-		$this->register("pocketmine", new LoadPluginCommand("loadplugin"));
-
-		$this->register("pocketmine", new LvdatCommand("lvdat"));
-		$this->register("pocketmine", new BiomeCommand("biome"));
-		$this->register("pocketmine", new CaveCommand("cave"));
-		$this->register("pocketmine", new ChunkInfoCommand("chunkinfo"));
-
-		$this->register("pocketmine", new VersionCommand("version"));
-		$this->register("pocketmine", new FillCommand("fill"));
-		$this->register("pocketmine", new PluginsCommand("plugins"));
-		$this->register("pocketmine", new SeedCommand("seed"));
-		$this->register("pocketmine", new HelpCommand("help"), null, true);
-		$this->register("pocketmine", new StopCommand("stop"), null, true);
-		$this->register("pocketmine", new TellCommand("tell"));
-		$this->register("pocketmine", new DefaultGamemodeCommand("defaultgamemode"));
-		$this->register("pocketmine", new BanCommand("ban"));
-		$this->register("pocketmine", new BanIpCommand("ban-ip"));
-		$this->register("pocketmine", new BanListCommand("banlist"));
-		$this->register("pocketmine", new PardonCommand("pardon"));
-		$this->register("pocketmine", new PardonIpCommand("pardon-ip"));
-		$this->register("pocketmine", new SayCommand("say"));
-		$this->register("pocketmine", new MeCommand("me"));
-		$this->register("pocketmine", new ListCommand("list"));
-		$this->register("pocketmine", new DifficultyCommand("difficulty"));
-		$this->register("pocketmine", new KickCommand("kick"));
-		$this->register("pocketmine", new OpCommand("op"));
-		$this->register("pocketmine", new DeopCommand("deop"));
-		$this->register("pocketmine", new WhitelistCommand("whitelist"));
-		$this->register("pocketmine", new SaveOnCommand("save-on"));
-		$this->register("pocketmine", new SaveOffCommand("save-off"));
-		$this->register("pocketmine", new SaveCommand("save-all"), null, true);
-		$this->register("pocketmine", new GiveCommand("give"));
-		$this->register("pocketmine", new EffectCommand("effect"));
-		$this->register("pocketmine", new EnchantCommand("enchant"));
-		$this->register("pocketmine", new ParticleCommand("particle"));
-		$this->register("pocketmine", new GamemodeCommand("gamemode"));
-		$this->register("pocketmine", new KillCommand("kill"));
-		$this->register("pocketmine", new SpawnpointCommand("spawnpoint"));
-		$this->register("pocketmine", new SetWorldSpawnCommand("setworldspawn"));
-		$this->register("pocketmine", new SummonCommand("summon"));
-		$this->register("pocketmine", new TeleportCommand("tp"));
-
-		$this->register("pocketmine", new TransferServerCommand("transfer"));
-
-		$this->register("pocketmine", new TimeCommand("time"));
-		$this->register("pocketmine", new TimingsCommand("timings"));
-		$this->register("pocketmine", new ReloadCommand("reload"), null, true);
-		$this->register("pocketmine", new XpCommand("xp"));
-		$this->register("pocketmine", new SetBlockCommand("setblock"));
+	    $this->registerAll("pocketmine", [
+            new BanCommand("ban"),
+            new BanIpCommand("ban-ip"),
+            new BanListCommand("banlist"),
+            new BiomeCommand("biome"),
+            new CaveCommand("cave"),
+            new ChunkInfoCommand("chunkinfo"),
+            new ClearInventoryCommand("clearinv"),
+            new DefaultGamemodeCommand("defaultgamemode"),
+            new DeopCommand("deop"),
+            new DifficultyCommand("difficulty"),
+            new EffectCommand("effect"),
+            new EnchantCommand("enchant"),
+            new ExtractPharCommand("extractphar"),
+            new ExtractPluginCommand("ep"),
+            new FillCommand("fill"),
+            new GamemodeCommand("gamemode"),
+            new GiveCommand("give"),
+            new HelpCommand("help"),
+            new KickCommand("kick"),
+            new KillCommand("kill"),
+            new ListCommand("list"),
+            new LoadPluginCommand("loadplugin"),
+            new LvdatCommand("lvdat"),
+            new MakePluginCommand("mp"),
+            new MakeServerCommand("ms"),
+            new MeCommand("me"),
+            new OpCommand("op"),
+            new PardonCommand("pardon"),
+            new PardonIpCommand("pardon-ip"),
+            new ParticleCommand("particle"),
+            new PingCommand("ping"),
+            new PluginsCommand("plugins"),
+            new ReloadCommand("reload"),
+            new SaveCommand("save-all"),
+            new SaveOffCommand("save-off"),
+            new SaveOnCommand("save-on"),
+            new SayCommand("say"),
+            new SeedCommand("seed"),
+            new SetBlockCommand("setblock"),
+            new SetWorldSpawnCommand("setworldspawn"),
+            new SpawnpointCommand("spawnpoint"),
+            new StopCommand("stop"),
+            new SummonCommand("summon"),
+            new TeleportCommand("tp"),
+            new TellCommand("tell"),
+            new TimeCommand("time"),
+            new TimingsCommand("timings"),
+            new TransferServerCommand("transfer"),
+            new VersionCommand("version"),
+            new WeatherCommand("weather"),
+            new WhitelistCommand("whitelist"),
+            new XpCommand("xp"),
+        ]);
 
 		if($this->server->getProperty("debug.commands", false)){
-			$this->register("pocketmine", new StatusCommand("status"), null, true);
-			$this->register("pocketmine", new GarbageCollectorCommand("gc"), null, true);
-			$this->register("pocketmine", new DumpMemoryCommand("dumpmemory"), null, true);
+			$this->registerAll("pocketmine", [
+                new DumpMemoryCommand("dumpmemory"),
+                new GarbageCollectorCommand("gc"),
+                new StatusCommand("status")
+            ]);
 		}
 	}
-
 
 	/**
 	 * @param string $fallbackPrefix
@@ -199,18 +196,17 @@ class SimpleCommandMap implements CommandMap {
 	 * @param string  $fallbackPrefix
 	 * @param Command $command
 	 * @param null    $label
-	 * @param bool    $overrideConfig
 	 *
 	 * @return bool
 	 */
-	public function register($fallbackPrefix, Command $command, $label = null, $overrideConfig = false){
+	public function register($fallbackPrefix, Command $command, $label = null){
 		if($label === null){
 			$label = $command->getName();
 		}
 		$label = strtolower(trim($label));
 
 		//Check if command was disabled in config and for override
-		if(!(($this->commandConfig[$label] ?? $this->commandConfig["default"] ?? true) or $overrideConfig)){
+		if(!(($this->commandConfig[$label] ?? $this->commandConfig["default"] ?? true))){
 			return false;
 		}
 		$fallbackPrefix = strtolower(trim($fallbackPrefix));
@@ -233,6 +229,21 @@ class SimpleCommandMap implements CommandMap {
 
 		return $registered;
 	}
+
+    /**
+     * @param Command $command
+     *
+     * @return bool
+     */
+    public function unregister(Command $command) : bool{
+        foreach($this->knownCommands as $lbl => $cmd){
+            if($cmd === $command){
+                unset($this->knownCommands[$lbl]);
+            }
+        }
+        $command->unregister($this);
+        return true;
+    }
 
 	/**
 	 * @param Command $command
@@ -310,8 +321,8 @@ class SimpleCommandMap implements CommandMap {
 	 *
 	 * @return bool
 	 */
-	public function dispatch(CommandSender $sender, $commandLine){
-		$args = explode(" ", $commandLine);
+	public function dispatch(CommandSender $sender, string $commandLine){
+        $args = array_map("stripslashes", str_getcsv($commandLine, " "));
 
 		if(count($args) === 0){
 			return false;
@@ -331,7 +342,9 @@ class SimpleCommandMap implements CommandMap {
 			}else{
 				$target->execute($sender, $sentCommandLabel, $args);
 			}
-		}catch(\Throwable $e){
+		}catch(InvalidCommandSyntaxException $exception){
+            $sender->sendMessage(new TranslationContainer("commands.generic.usage", [$target->getUsage()]));
+        }catch(\Throwable $e){
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.exception"));
 			$this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.command.exception", [$commandLine, (string) $target, $e->getMessage()]));
 			$logger = $sender->getServer()->getLogger();
@@ -416,6 +429,15 @@ class SimpleCommandMap implements CommandMap {
 
 		}
 	}
-
-
+	
+	public function getAvailableCommands(CommandSender $sender) : array{
+		$available = [];
+		foreach($this->knownCommands as $i => $cmd){
+			if($cmd->scanPermission($sender) and $cmd instanceof Command){
+				$available[$cmd->getName()] = $cmd;
+			}
+		}
+		
+		return $available;
+	}
 }

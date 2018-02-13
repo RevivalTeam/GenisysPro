@@ -2,34 +2,53 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
-*/
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\item;
 
+use pocketmine\block\BlockToolType;
 
 class Shears extends Tool {
-	/**
-	 * Shears constructor.
-	 *
-	 * @param int $meta
-	 * @param int $count
-	 */
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::SHEARS, $meta, $count, "Shears");
+
+	public function __construct(int $meta = 0){
+		parent::__construct(self::SHEARS, $meta, "Shears");
 	}
+
+    public function getMaxDurability() : int{
+        return 239;
+    }
+
+    public function isShears() : bool{
+        return true;
+    }
+
+    public function getBlockToolType() : int{
+        return BlockToolType::TYPE_SHEARS;
+    }
+
+    public function getBlockToolHarvestLevel() : int{
+        return 1;
+    }
+
+    protected function getBaseMiningEfficiency() : float{
+        return 15;
+    }
 }

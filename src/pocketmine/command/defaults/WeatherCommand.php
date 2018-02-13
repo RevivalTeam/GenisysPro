@@ -2,39 +2,40 @@
 
 /*
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
+ *
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
- */
+ *
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\level\Level;
 use pocketmine\level\weather\Weather;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
-class WeatherCommand extends VanillaCommand {
+class WeatherCommand extends VanillaCommand{
 
-	/**
-	 * WeatherCommand constructor.
-	 *
-	 * @param string $name
-	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
@@ -42,42 +43,28 @@ class WeatherCommand extends VanillaCommand {
 			"%pocketmine.command.weather.usage"
 		);
 		$this->setPermission("pocketmine.command.weather");
+		// TODO : ADD ENUMS
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string        $currentAlias
-	 * @param array         $args
-	 *
-	 * @return bool
-	 */
-	public function execute(CommandSender $sender, $currentAlias, array $args){
-		if(!$this->testPermission($sender)){
+	public function execute(CommandSender $sender, string $currentAlias, array $args){
+		if(!$this->canExecute($sender)){
 			return true;
 		}
 
 		if(count($args) < 1){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
-			return false;
+            throw new InvalidCommandSyntaxException();
 		}
 
 		if($sender instanceof Player){
-			$wea = Weather::getWeatherFromString($args[0]);
-			if(!isset($args[1])) $duration = mt_rand(min($sender->getServer()->weatherRandomDurationMin, $sender->getServer()->weatherRandomDurationMax), max($sender->getServer()->weatherRandomDurationMin, $sender->getServer()->weatherRandomDurationMax));
-			else $duration = (int) $args[1];
-			if($wea >= 0 and $wea <= 3){
-				$sender->getLevel()->getWeather()->setWeather($wea, $duration);
+		    if(is_int($args[0])){
+		        $wea = Weather::isWeather($args[0]) ? $args[0] : Weather::SUNNY;
+            }else{
+                $wea = Weather::getWeatherFromString($args[0]);
+            }
+			if(Weather::isWeather($wea)){
+				$sender->getLevel()->getWeather()->setWeather($wea);
 				$sender->sendMessage(new TranslationContainer("pocketmine.command.weather.changed", [$sender->getLevel()->getFolderName()]));
 				return true;
-				/*if(WeatherManager::isRegistered($sender->getLevel())){
-					$sender->getLevel()->getWeather()->setWeather($wea, $duration);
-					$sender->sendMessage(new TranslationContainer("pocketmine.command.weather.changed", [$sender->getLevel()->getFolderName()]));
-					return true;
-				}else{
-					$sender->sendMessage(new TranslationContainer("pocketmine.command.weather.noregistered", [$sender->getLevel()->getFolderName()]));
-					return false;
-				}*/
 			}else{
 				$sender->sendMessage(TextFormat::RED . "%pocketmine.command.weather.invalid");
 				return false;
@@ -85,8 +72,7 @@ class WeatherCommand extends VanillaCommand {
 		}
 
 		if(count($args) < 2){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-			return false;
+            throw new InvalidCommandSyntaxException();
 		}
 
 		$level = $sender->getServer()->getLevelByName($args[0]);
@@ -95,21 +81,15 @@ class WeatherCommand extends VanillaCommand {
 			return false;
 		}
 
-		$wea = Weather::getWeatherFromString($args[1]);
-		if(!isset($args[1])) $duration = mt_rand(min($sender->getServer()->weatherRandomDurationMin, $sender->getServer()->weatherRandomDurationMax), max($sender->getServer()->weatherRandomDurationMin, $sender->getServer()->weatherRandomDurationMax));
-		else $duration = (int) $args[1];
-		if($wea >= 0 and $wea <= 3){
-			$level->getWeather()->setWeather($wea, $duration);
+        if(is_int($args[1])){
+            $wea = Weather::isWeather($args[1]) ? $args[1] : Weather::SUNNY;
+        }else{
+            $wea = Weather::getWeatherFromString($args[1]);
+        }
+		if(Weather::isWeather($wea)){
+			$level->getWeather()->setWeather($wea);
 			$sender->sendMessage(new TranslationContainer("pocketmine.command.weather.changed", [$level->getFolderName()]));
 			return true;
-			/*if(WeatherManager::isRegistered($level)){
-				$level->getWeather()->setWeather($wea, $duration);
-				$sender->sendMessage(new TranslationContainer("pocketmine.command.weather.changed", [$level->getFolderName()]));
-				return true;
-			}else{
-				$sender->sendMessage(new TranslationContainer("pocketmine.command.weather.noregistered", [$level->getFolderName()]));
-				return false;
-			}*/
 		}else{
 			$sender->sendMessage(TextFormat::RED . "%pocketmine.command.weather.invalid");
 			return false;

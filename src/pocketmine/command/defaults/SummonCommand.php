@@ -2,43 +2,41 @@
 
 /*
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
  */
+
+declare(strict_types=1);
 
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\event\TranslationContainer;
+use pocketmine\command\overload\CommandEnum;
+use pocketmine\command\overload\CommandParameter;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
+use pocketmine\math\Vector3;
+use pocketmine\nbt\JsonNBTParser;
 use pocketmine\nbt\NBT;
 use pocketmine\Player;
 use pocketmine\entity\Entity;
 use pocketmine\utils\TextFormat;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\DoubleTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\FloatTag;
 
-class SummonCommand extends VanillaCommand {
+class SummonCommand extends VanillaCommand{
 
-	/**
-	 * SummonCommand constructor.
-	 *
-	 * @param $name
-	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
@@ -46,30 +44,22 @@ class SummonCommand extends VanillaCommand {
 			"%pocketmine.command.summon.usage"
 		);
 		$this->setPermission("pocketmine.command.summon");
+
+		$this->getOverload("default")->setParameter(0, new CommandParameter("entityType", CommandParameter::TYPE_STRING, false, CommandParameter::FLAG_ENUM, new CommandEnum("mob", Entity::getEntityNames())));
+		$this->getOverload("default")->setParameter(1, new CommandParameter("spawnPos", CommandParameter::TYPE_POSITION, true));
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string        $currentAlias
-	 * @param array         $args
-	 *
-	 * @return bool
-	 */
-	public function execute(CommandSender $sender, $currentAlias, array $args){
-		if(!$this->testPermission($sender)){
+	public function execute(CommandSender $sender, string $currentAlias, array $args){
+		if(!$this->canExecute($sender)){
 			return true;
 		}
 
 		if(count($args) != 1 and count($args) != 4 and count($args) != 5){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-			return true;
+            throw new InvalidCommandSyntaxException();
 		}
 
-		$x = 0;
-		$y = 0;
-		$z = 0;
-		if(count($args) == 4 or count($args) == 5){            //position is set
-			//TODO:simpilify them to one piece of code
+		$x = $y = $z = 0;
+		if(count($args) == 4 or count($args) == 5){  //position is set
 			//Code for setting $x
 			if(is_numeric($args[1])){                            //x is given directly
 				$x = $args[1];
@@ -134,24 +124,9 @@ class SummonCommand extends VanillaCommand {
 		$entity = null;
 		$type = $args[0];
 		$level = ($sender instanceof Player) ? $sender->getLevel() : $sender->getServer()->getDefaultLevel();
-		$nbt = new CompoundTag("", [
-			"Pos" => new ListTag("Pos", [
-				new DoubleTag("", $x),
-				new DoubleTag("", $y),
-				new DoubleTag("", $z)
-			]),
-			"Motion" => new ListTag("Motion", [
-				new DoubleTag("", 0),
-				new DoubleTag("", 0),
-				new DoubleTag("", 0)
-			]),
-			"Rotation" => new ListTag("Rotation", [
-				new FloatTag("", lcg_value() * 360),
-				new FloatTag("", 0)
-			]),
-		]);
+		$nbt = Entity::createBaseNBT(new Vector3($x, $y, $z), null, lcg_value() * 360);
 		if(count($args) == 5 and $args[4]{0} == "{"){//Tags are found
-			$nbtExtra = NBT::parseJSON($args[4]);
+			$nbtExtra = JsonNBTParser::parseJSON($args[4]);
 			$nbt = NBT::combineCompoundTags($nbt, $nbtExtra, true);
 		}
 

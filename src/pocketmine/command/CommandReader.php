@@ -2,24 +2,25 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
  *
 */
-
-declare(strict_types=1);
 
 namespace pocketmine\command;
 
@@ -109,8 +110,7 @@ class CommandReader extends Thread {
 	private function readLine() : bool{
 		$line = "";
 		if($this->type === self::TYPE_READLINE){
-			$line = trim(readline("> "));
-			if($line !== ""){
+            if(($raw = readline("> ")) !== false and ($line = trim($raw)) !== ""){
 				readline_add_history($line);
 			}else{
 				return true;
@@ -122,8 +122,10 @@ class CommandReader extends Thread {
 				$this->initStdin();
 			}
 
-			switch($this->type){
+            switch($this->type){
+                /** @noinspection PhpMissingBreakStatementInspection */
 				case self::TYPE_STREAM:
+                    //stream_select doesn't work on piped streams for some reason
 					$r = [$stdin];
 					if(($count = stream_select($r, $w, $e, 0, 200000)) === 0){ //nothing changed in 200000 microseconds
 						return true;
@@ -131,13 +133,6 @@ class CommandReader extends Thread {
 						$this->initStdin();
 					}
 
-					if(($raw = fgets($stdin)) !== false){
-						$line = trim($raw);
-					}else{
-						return false; //user pressed ctrl+c?
-					}
-
-					break;
 				case self::TYPE_PIPED:
 					if(($raw = fgets($stdin)) === false){ //broken pipe or EOF
 						$this->initStdin();
@@ -145,10 +140,10 @@ class CommandReader extends Thread {
 							$this->wait(200000);
 						}); //prevent CPU waste if it's end of pipe
 						return true; //loop back round
-					}else{
-						$line = trim($raw);
 					}
-					break;
+
+                    $line = trim($raw);
+                    break;
 			}
 		}
 
@@ -177,7 +172,7 @@ class CommandReader extends Thread {
 			$this->initStdin();
 		}
 
-		while(!$this->shutdown and $this->readLine()) ;
+		while(!$this->shutdown and $this->readLine());
 
 		if($this->type !== self::TYPE_READLINE){
 			global $stdin;

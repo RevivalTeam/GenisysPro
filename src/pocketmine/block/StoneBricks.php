@@ -2,30 +2,33 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ *
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
+ *
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
-use pocketmine\item\Item;
-use pocketmine\item\Tool;
+use pocketmine\item\TieredTool;
 
-class StoneBricks extends Solid {
-
+class StoneBricks extends Solid{
 	const NORMAL = 0;
 	const MOSSY = 1;
 	const CRACKED = 2;
@@ -33,55 +36,29 @@ class StoneBricks extends Solid {
 
 	protected $id = self::STONE_BRICKS;
 
-	/**
-	 * StoneBricks constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return float
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 1.5;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
 
-	/**
-	 * @return string
-	 */
+    public function getToolHarvestLevel() : int{
+        return TieredTool::TIER_WOODEN;
+    }
+
 	public function getName() : string{
 		static $names = [
-			0 => "Stone Bricks",
-			1 => "Mossy Stone Bricks",
-			2 => "Cracked Stone Bricks",
-			3 => "Chiseled Stone Bricks",
+			self::NORMAL => "Stone Bricks",
+			self::MOSSY => "Mossy Stone Bricks",
+			self::CRACKED => "Cracked Stone Bricks",
+			self::CHISELED => "Chiseled Stone Bricks",
 		];
-		return $names[$this->meta & 0x03];
+		return $names[$this->getVariant()] ?? "Unknown";
 	}
-
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		if($item->isPickaxe() >= 1){
-			return [
-				[Item::STONE_BRICKS, $this->meta & 0x03, 1],
-			];
-		}else{
-			return [];
-		}
-	}
-
 }

@@ -1,4 +1,4 @@
-# Main configuration file for PocketMine-MP
+# Main configuration file for Turanic
 # These settings are the ones that cannot be included in server.properties
 # Some of these settings are safe, others can break your server if modified incorrectly
 # New settings/defaults won't appear automatically on this file when upgrading.
@@ -24,8 +24,6 @@ settings:
  #Set this approximately to your number of cores.
  #If set to auto, it'll try to detect the number of cores (or use 2)
  async-workers: auto
- #Enables use of non-production, development builds. WARNING: DO NOT enable this unless you are sure you know what you are doing.
- enable-testing: false
 
 memory:
  #Global soft memory limit in megabytes. Set to 0 to disable
@@ -40,6 +38,11 @@ memory:
  #This will stop the server when the limit is surpassed
  main-hard-limit: 1024
 
+ #AsyncWorker threads' hard memory limit in megabytes. Set to 0 to disable
+ #This will crash the task currently executing on the worker if the task exceeds the limit
+ #NOTE: THIS LIMIT APPLIES PER WORKER, NOT TO THE WHOLE PROCESS.
+ async-worker-hard-limit: 1024
+
  #Period in ticks to check memory (default 1 second)
  check-rate: 20
 
@@ -48,6 +51,11 @@ memory:
 
  #Only if memory.continuous-trigger is enabled. Specifies the rate in memory.check-rate steps (default 30 seconds)
  continuous-trigger-rate: 30
+
+ #Settings controlling memory dump handling.
+ memory-dump:
+  #Dump memory from async workers as well as the main thread. If you have issues with segfaults when dumping memory, disable this setting.
+  dump-async-worker: true
 
  garbage-collection:
   #Period in ticks to fire the garbage collector manually (default 30 minutes), set to 0 to disable
@@ -85,6 +93,9 @@ network:
  async-compression: true
  #Experimental, only for Windows. Tries to use UPnP to automatically port forward
  upnp-forwarding: false
+ #Maximum size in bytes of packets sent over the network (default 1492 bytes). Packets larger than this will be
+ #fragmented or split into smaller parts. Clients can request MTU sizes up to but not more than this number.
+ max-mtu-size: 1492
 
 debug:
  #To enable assertion execution, set zend.assertions in your php.ini to 1
@@ -104,9 +115,7 @@ player:
  save-player-data: true
  anti-cheat:
   #If false, will try to prevent speed and noclip cheats. May cause movement issues with some blocks which are not yet properly implemented.
-  allow-movement-cheats: true
-  #If false, times block breaks to ensure players are not cheating. May cause issues with some blocks which are not yet properly implemented.
-  allow-instabreak: false
+  allow-movement-cheats: false
 
 level-settings:
  #The default format that levels will use when created
@@ -125,9 +134,6 @@ chunk-sending:
  per-tick: 2
  #Radius of chunks that need to be sent before spawning the player
  spawn-radius: 4
- #Save a serialized copy of the chunk in memory for faster sending
- #Useful in mostly-static worlds where lots of players join at the same time
- cache-chunks: true
  #Use AsyncTasks for serializing chunks for sending.
  async-chunk-request: false
 
@@ -158,19 +164,6 @@ spawn-limits:
   animals: 15
   water-animals: 5
   ambient: 15
-
-auto-report:
- #Send crash reports for processing
- enabled: false
- send-code: true
- send-settings: true
- send-phpinfo: false
- host: crash.pocketmine.net
-
-anonymous-statistics:
- #Sends anonymous statistics for data aggregation, plugin usage tracking
- enabled: true
- host: stats.pocketmine.net
 
 commands:
  #Here you can customize server commands

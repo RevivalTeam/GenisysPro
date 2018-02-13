@@ -19,26 +19,24 @@
  *
 */
 
+declare(strict_types=1);
+
+
 namespace pocketmine\network\mcpe\protocol;
 
-class MapInfoRequestPacket extends DataPacket {
+#include <rules/DataPacket.h>
+
+class MapInfoRequestPacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::MAP_INFO_REQUEST_PACKET;
 
-	public $uuid;
+	/** @var int */
+	public $mapId;
 
-	/**
-	 *
-	 */
-	public function decode(){
-		$this->uuid = $this->getEntityId();
+	protected function decodePayload(){
+		$this->mapId = $this->getEntityUniqueId();
 	}
 
-	/**
-	 *
-	 */
-	public function encode(){
-		$this->reset();
-		$this->putEntityId($this->uuid);
+	protected function encodePayload(){
+		$this->putEntityUniqueId($this->mapId);
 	}
-
 }

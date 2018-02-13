@@ -2,47 +2,50 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
- *
-*/
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\item;
 
-class CookedFish extends Fish {
+class CookedFish extends Food {
+
 	/**
 	 * CookedFish constructor.
 	 *
 	 * @param int $meta
-	 * @param int $count
 	 */
-	public function __construct($meta = 0, $count = 1){
-		Food::__construct(self::COOKED_FISH, $meta, $count, $meta === self::FISH_SALMON ? "Cooked Salmon" : "Cooked Fish");
+	public function __construct(int $meta = 0){
+		parent::__construct(self::COOKED_FISH, $meta, "Cooked Fish");
 	}
 
 	/**
 	 * @return int
 	 */
 	public function getFoodRestore() : int{
-		return $this->meta === self::FISH_SALMON ? 6 : 5;
+		return 5;
 	}
 
 	/**
 	 * @return float
 	 */
 	public function getSaturationRestore() : float{
-		return $this->meta === self::FISH_SALMON ? 9.6 : 6;
+		return 6;
 	}
 }

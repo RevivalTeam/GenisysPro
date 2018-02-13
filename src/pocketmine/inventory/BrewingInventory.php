@@ -23,20 +23,25 @@ namespace pocketmine\inventory;
 
 use pocketmine\item\Item;
 use pocketmine\tile\BrewingStand;
+use pocketmine\network\mcpe\protocol\types\WindowTypes;
 
 class BrewingInventory extends ContainerInventory {
-	/**
-	 * BrewingInventory constructor.
-	 *
-	 * @param BrewingStand $tile
-	 */
+
+    /** @var BrewingStand */
+    protected $holder;
+
 	public function __construct(BrewingStand $tile){
-		parent::__construct($tile, InventoryType::get(InventoryType::BREWING_STAND));
+		parent::__construct($tile);
+	}
+	
+	public function getName() : string{
+		return "Brewing";
+	}
+	
+	public function getDefaultSize() : int{
+		return 4;
 	}
 
-	/**
-	 * @return BrewingStand
-	 */
 	public function getHolder(){
 		return $this->holder;
 	}
@@ -60,10 +65,14 @@ class BrewingInventory extends ContainerInventory {
 	 * @param Item $before
 	 * @param bool $send
 	 */
-	public function onSlotChange($index, $before, $send){
+	public function onSlotChange(int $index, Item $before, bool $send){
 		parent::onSlotChange($index, $before, $send);
 
 		$this->getHolder()->scheduleUpdate();
 		$this->getHolder()->updateSurface();
+	}
+	
+	public function getNetworkType() : int{
+		return WindowTypes::BREWING_STAND;
 	}
 }

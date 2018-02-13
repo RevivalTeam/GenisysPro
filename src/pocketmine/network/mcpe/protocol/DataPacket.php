@@ -2,11 +2,11 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,65 +15,101 @@
  *
  * @author PocketMine Team
  * @link http://www.pocketmine.net/
- * 
+ *
  *
 */
+
+declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-use pocketmine\entity\Entity;
-use pocketmine\item\Item;
-use pocketmine\utils\BinaryStream;
+use pocketmine\network\mcpe\NetworkBinaryStream;
 use pocketmine\utils\Utils;
 
-abstract class DataPacket extends BinaryStream {
+abstract class DataPacket extends NetworkBinaryStream{
 
 	const NETWORK_ID = 0;
 
+	/** @var bool */
 	public $isEncoded = false;
 
-	/**
-	 * @return int
-	 */
+	/** @var int */
+	public $extraByte1 = 0;
+	/** @var int */
+	public $extraByte2 = 0;
+
 	public function pid(){
 		return $this::NETWORK_ID;
 	}
 
-	/**
-	 * @return mixed
-	 */
-	abstract public function encode();
+	public function getName() : string{
+		return (new \ReflectionClass($this))->getShortName();
+	}
 
-	/**
-	 * @return mixed
-	 */
-	abstract public function decode();
+	public function canBeBatched() : bool{
+		return true;
+	}
 
-	public function reset(){
-		$this->buffer = chr($this::NETWORK_ID);
+	public function canBeSentBeforeLogin() : bool{
+		return false;
+	}
+
+	public function decode(){
 		$this->offset = 0;
+		$this->decodeHeader();
+		$this->decodePayload();
+	}
+
+	protected function decodeHeader(){
+		$pid = $this->getUnsignedVarInt();
+		assert($pid === static::NETWORK_ID);
+
+		$this->extraByte1 = $this->getByte();
+		$this->extraByte2 = $this->getByte();
+		assert($this->extraByte1 === 0 and $this->extraByte2 === 0, "Got unexpected non-zero split-screen bytes (byte1: $this->extraByte1, byte2: $this->extraByte2");
 	}
 
 	/**
-	 * @return $this
+	 * Note for plugin developers: If you're adding your own packets, you should perform decoding in here.
 	 */
+	protected function decodePayload(){
+
+	}
+
+	public function encode(){
+		$this->reset();
+		$this->encodeHeader();
+		$this->encodePayload();
+		$this->isEncoded = true;
+	}
+
+	protected function encodeHeader(){
+		$this->putUnsignedVarInt(static::NETWORK_ID);
+
+		$this->putByte($this->extraByte1);
+		$this->putByte($this->extraByte2);
+	}
+
+	/**
+	 * Note for plugin developers: If you're adding your own packets, you should perform encoding in here.
+	 */
+	protected function encodePayload(){
+
+	}
+
 	public function clean(){
 		$this->buffer = null;
 		$this->isEncoded = false;
 		$this->offset = 0;
-
 		return $this;
 	}
 
-	/**
-	 * @return array
-	 */
 	public function __debugInfo(){
 		$data = [];
 		foreach($this as $k => $v){
-			if($k === "buffer"){
+			if($k === "buffer" and is_string($v)){
 				$data[$k] = bin2hex($v);
 			}elseif(is_string($v) or (is_object($v) and method_exists($v, "__toString"))){
 				$data[$k] = Utils::printable((string) $v);
@@ -85,117 +121,7 @@ abstract class DataPacket extends BinaryStream {
 		return $data;
 	}
 
-	/**
-	 * @param bool $types
-	 *
-	 * @return array
-	 */
-	public function getEntityMetadata(bool $types = true) : array{
-		$count = $this->getUnsignedVarInt();
-		$data = [];
-		for($i = 0; $i < $count; ++$i){
-			$key = $this->getUnsignedVarInt();
-			$type = $this->getUnsignedVarInt();
-			$value = null;
-			switch($type){
-				case Entity::DATA_TYPE_BYTE:
-					$value = $this->getByte();
-					break;
-				case Entity::DATA_TYPE_SHORT:
-					$value = $this->getLShort(true); //signed
-					break;
-				case Entity::DATA_TYPE_INT:
-					$value = $this->getVarInt();
-					break;
-				case Entity::DATA_TYPE_FLOAT:
-					$value = $this->getLFloat();
-					break;
-				case Entity::DATA_TYPE_STRING:
-					$value = $this->getString();
-					break;
-				case Entity::DATA_TYPE_SLOT:
-					//TODO: use objects directly
-					$value = [];
-					$item = $this->getSlot();
-					$value[0] = $item->getId();
-					$value[1] = $item->getCount();
-					$value[2] = $item->getDamage();
-					break;
-				case Entity::DATA_TYPE_POS:
-					$value = [];
-					$value[0] = $this->getVarInt(); //x
-					$value[1] = $this->getVarInt(); //y (SIGNED)
-					$value[2] = $this->getVarInt(); //z
-					break;
-				case Entity::DATA_TYPE_LONG:
-					$value = $this->getVarInt(); //TODO: varint64 proper support
-					break;
-				case Entity::DATA_TYPE_VECTOR3F:
-					$value = [0.0, 0.0, 0.0];
-					$this->getVector3f($value[0], $value[1], $value[2]);
-					break;
-				default:
-					$value = [];
-			}
-			if($types === true){
-				$data[$key] = [$value, $type];
-			}else{
-				$data[$key] = $value;
-			}
-		}
-
-		return $data;
-	}
-
-	/**
-	 * @param array $metadata
-	 */
-	public function putEntityMetadata(array $metadata){
-		$this->putUnsignedVarInt(count($metadata));
-		foreach($metadata as $key => $d){
-			$this->putUnsignedVarInt($key); //data key
-			$this->putUnsignedVarInt($d[0]); //data type
-			switch($d[0]){
-				case Entity::DATA_TYPE_BYTE:
-					$this->putByte($d[1]);
-					break;
-				case Entity::DATA_TYPE_SHORT:
-					$this->putLShort($d[1]); //SIGNED short!
-					break;
-				case Entity::DATA_TYPE_INT:
-					$this->putVarInt($d[1]);
-					break;
-				case Entity::DATA_TYPE_FLOAT:
-					$this->putLFloat($d[1]);
-					break;
-				case Entity::DATA_TYPE_STRING:
-					$this->putString($d[1]);
-					break;
-				case Entity::DATA_TYPE_SLOT:
-					//TODO: change this implementation (use objects)
-					$this->putSlot(Item::get($d[1][0], $d[1][2], $d[1][1])); //ID, damage, count
-					break;
-				case Entity::DATA_TYPE_POS:
-					//TODO: change this implementation (use objects)
-					$this->putVarInt($d[1][0]); //x
-					$this->putVarInt($d[1][1]); //y (SIGNED)
-					$this->putVarInt($d[1][2]); //z
-					break;
-				case Entity::DATA_TYPE_LONG:
-					$this->putVarInt($d[1]); //TODO: varint64 support
-					break;
-				case Entity::DATA_TYPE_VECTOR3F:
-					//TODO: change this implementation (use objects)
-					$this->putVector3f($d[1][0], $d[1][1], $d[1][2]); //x, y, z
-			}
-		}
-	}
-
-	/**
-	 * @return PacketName|string
-	 */
-	public function getName(){
-		return "DataPacket";
-	}
-
+    public function mayHaveUnreadBytes() : bool{
+	    return false;
+    }
 }

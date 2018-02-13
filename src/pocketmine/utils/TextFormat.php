@@ -2,22 +2,23 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
-*/
+ */
 
 namespace pocketmine\utils;
 
@@ -26,6 +27,7 @@ namespace pocketmine\utils;
  */
 abstract class TextFormat {
 	const ESCAPE = "\xc2\xa7"; //§
+	const EOL = "\n";
 
 	const BLACK = TextFormat::ESCAPE . "0";
 	const DARK_BLUE = TextFormat::ESCAPE . "1";
@@ -61,6 +63,28 @@ abstract class TextFormat {
 	public static function tokenize($string){
 		return preg_split("/(" . TextFormat::ESCAPE . "[0123456789abcdefklmnor])/", $string, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 	}
+
+    /**
+     * It makes every letter of this sentence mixed in color.
+     *
+     * @param string $string
+     * @param string|null $colors
+     * @return string
+     */
+    public static function randomize(string $string, string $colors = null) : string{
+	    $string = TextFormat::clean($string);
+        $colors = $colors ?? "abcdef0123456789"; // only colors added
+        $replace = "";
+        for($i = 0; $i<strlen($string); $i++){
+            if($string{$i} == " "){
+                $replace .= " ";
+                continue;
+            }
+            $color = $colors{mt_rand(0, strlen($colors) - 1)};
+            $replace .= TextFormat::ESCAPE.$color.$string{$i};
+        }
+        return $replace;
+    }
 
 	/**
 	 * Cleans the string from Minecraft codes and ANSI Escape Codes

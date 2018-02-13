@@ -307,7 +307,6 @@ class Utils {
 			case "bsd":
 			case "mac":
 				$processors = (int) `sysctl -n hw.ncpu`;
-				$processors = (int) `sysctl -n hw.ncpu`;
 				break;
 			case "win":
 				$processors = (int) getenv("NUMBER_OF_PROCESSORS");
@@ -428,28 +427,54 @@ class Utils {
 		return $ret;
 	}
 
-	/**
-	 * @param $string
-	 *
-	 * @return int
-	 */
-	public static function javaStringHash($string){
-		$hash = 0;
-		for($i = 0; $i < strlen($string); $i++){
-			$ord = ord($string{$i});
-			if($ord & 0x80){
-				$ord -= 0x100;
-			}
-			$hash = 31 * $hash + $ord;
-			while($hash > 0x7FFFFFFF){
-				$hash -= 0x100000000;
-			}
-			while($hash < -0x80000000){
-				$hash += 0x100000000;
-			}
-			$hash &= 0xFFFFFFFF;
-		}
-		return $hash;
-	}
+    public static function javaStringHash(string $string) : int{
+        $hash = 0;
+        for($i = 0, $len = strlen($string); $i < $len; $i++){
+            $ord = ord($string{$i});
+            if($ord & 0x80){
+                $ord -= 0x100;
+            }
+            $hash = 31 * $hash + $ord;
+            while($hash > 0x7FFFFFFF){
+                $hash -= 0x100000000;
+            }
+            while($hash < -0x80000000){
+                $hash += 0x100000000;
+            }
+            $hash &= 0xFFFFFFFF;
+        }
+        return $hash;
+    }
+
+    public static function decodeJWT(string $token) : array{
+        list($headB64, $payloadB64, $sigB64) = explode(".", $token);
+
+        return json_decode(base64_decode(strtr($payloadB64, '-_', '+/'), true), true);
+    }
+
+    public static function urshift($n, $s) {
+        return ($n >= 0) ? ($n >> $s) :
+            (($n & 0x7fffffff) >> $s) |
+            (0x40000000 >> ($s - 1));
+    }
+
+    public static function copyOfRange(array $array, int $start, int $finish = null){
+	    if($finish == null){
+	        $finish = count($array) - 1;
+        }
+        if($start > $finish or $start < -1 or $start >= count($array) or $finish >= count($array)){
+            throw new \ArrayOutOfBoundsException("Out of bounds");
+        }
+        $new = [];
+        $sayi = 0;
+	    foreach($array as $key => $value){
+            if($sayi >= $start and $sayi <= $finish){
+                $new[$key] = $value;
+            }
+            if($sayi >= $finish) break;
+            $sayi++;
+        }
+        return $new;
+    }
 
 }

@@ -1,12 +1,13 @@
 #
-#   _____            _               _____           
-#  / ____|          (_)             |  __ \          
-# | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
-# | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
+#   _____            _               _____
+#  / ____|          (_)             |  __ \
+# | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+# | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
 # | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
-#  \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
-#                          __/ |                    
-#                         |___/                     
+#  \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+#                           __/ |
+#                          |___/
+#
 #
 #
 #
@@ -14,16 +15,11 @@
 
 #Version of this file
 config:
- version: 28
+ version: 31
 
 level:
  #Set if weather is enabled (rain may cause lag to older devices)
  weather: true
- #Weather random duration
- weather-random-duration-min: 6000
- weather-random-duration-max: 12000
- #Random lightning interval，default as 10s, 0 = disable
- lightning-time: 200
  #Set if lightning strikes have fire afterwards
  lightning-fire: false
  #Set if fire should spread (trees, etc.)
@@ -36,30 +32,30 @@ player:
  experience: true
  #Choose if to keep a player's inventory after they die
  keep-inventory: false
- #Clear the inventory of a player upon them changing their gamemode
- auto-clear-inventory : true
  #Choose if to keep a player's experience after they die
  keep-experience: false
 
 developer:
   #This setting allows the server to load plugins through the source directory over a .phar file
-  #Recommended that it stays "false"
   folder-plugin-loader: true
   #This setting allows the server to load plugins with Incompatible API
-  #Recommanded that it stays "false"
   load-incompatible-api: true
 
 nether:
- #Choose if the nether is allowed. The level of nether will generate automatically
- allow-nether: true
- #The name of nether's level
- level-name: "nether"
+  #Choose if the nether is allowed. The level of nether will generate automatically
+  allow-nether: true
+  #The name of nether's level
+  level-name: "nether"
 
 ender:
- allow-ender: true
- level-name: "ender"
+  #Allow End if this is enabled end will be generated.
+  allow-ender: true
+  #The name of end level
+  level-name: "ender"
 
 server:
+ #Shows Turanic in Settings Window
+ show-turanic: true
  #Choose if spawning iron golem is allowed
  allow-iron-golem: false
  #Choose if spawning snow golem is allowed
@@ -71,14 +67,10 @@ server:
  player-msg-type: 0
  login-msg: "§3@player joined the game"
  logout-msg: "§3@player left the game"
- #Set if limited creative is enabled (cannot drop items from hotbar, cannot open chests, and so on)
- limited-creative: false
  #Set if add DestroyBlockParticle
  destroy-block-particle: true
  #Set if splash potions are enabled
  allow-splash-potion: true
- #Set if Advanced Command Selector is enabled
- advanced-command-selector: false
  #Set if enable ResourcePackManager
  enable-resource: false
  #This parameter turns on or off the absorption of water by a sponge
@@ -92,18 +84,6 @@ enchantment:
  #Choose if to count bookshelves (may cause server lag)
  #If this option is false, the server will use a random count (0~15)
  count-bookshelf: false
-
-redstone:
- ################################################
- ####Choose if the redstone system is enabled####
- ################################################
- #If it is false, the redstone system won't work#
- ################################################
- enable: false
- #Choose if frequency pulses are enabled
- frequency-pulse: false
- #Set the frequency of pulse. Default = 1s
- pulse-frequency: 1
 
 dserver:
  #The count of all multi-server unified
@@ -134,3 +114,8 @@ dserver:
 inventory:
  #Set this to true if you have problems with anvils. This will process inventory transactions in a vanilla fashion with no anti-cheats or verification.
  allow-cheats: false
+ 
+# MobAI for Entities
+# This Feature INDEV(can not work corretly)
+mob-ai:
+ enable: false

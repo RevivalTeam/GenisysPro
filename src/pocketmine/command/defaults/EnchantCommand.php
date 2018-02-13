@@ -2,61 +2,60 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\overload\CommandParameter;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\utils\TextFormat;
 
 class EnchantCommand extends VanillaCommand {
 
-	/**
-	 * EnchantCommand constructor.
-	 *
-	 * @param $name
-	 */
-	public function __construct($name){
+	public function __construct(string $name){
 		parent::__construct(
 			$name,
 			"%pocketmine.command.enchant.description",
 			"%pocketmine.command.enchant.usage"
 		);
 		$this->setPermission("pocketmine.command.enchant");
+
+		$this->getOverload("default")->setParameter(0, new CommandParameter("player", CommandParameter::TYPE_TARGET, false));
+        $this->getOverload("default")->setParameter(1, new CommandParameter("id", CommandParameter::TYPE_MIXED, false));
+        $this->getOverload("default")->setParameter(2, new CommandParameter("level", CommandParameter::TYPE_INT, false));
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string        $currentAlias
-	 * @param array         $args
-	 *
-	 * @return bool
-	 */
-	public function execute(CommandSender $sender, $currentAlias, array $args){
-		if(!$this->testPermission($sender)){
+	public function execute(CommandSender $sender, string $currentAlias, array $args){
+		if(!$this->canExecute($sender)){
 			return true;
 		}
 
 		if(count($args) < 2){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-			return true;
+            throw new InvalidCommandSyntaxException();
 		}
 
 		$player = $sender->getServer()->getPlayer($args[0]);
@@ -66,42 +65,29 @@ class EnchantCommand extends VanillaCommand {
 			return true;
 		}
 
-		$enchantId = $args[1];
-		$enchantLevel = isset($args[2]) ? (int) $args[2] : 1;
+        $item = $player->getItemInHand();
 
-		$enchantment = Enchantment::getEnchantment($enchantId);
-		if($enchantment->getId() === Enchantment::TYPE_INVALID){
-			$enchantment = Enchantment::getEnchantmentByName($enchantId);
-			if($enchantment->getId() === Enchantment::TYPE_INVALID){
-				$sender->sendMessage(new TranslationContainer("commands.enchant.notFound", [$enchantment->getId()]));
-				return true;
-			}
-		}
-		$id = $enchantment->getId();
-		$maxLevel = Enchantment::getEnchantMaxLevel($id);
-		if($enchantLevel > $maxLevel or $enchantLevel <= 0){
-			$sender->sendMessage(new TranslationContainer("commands.enchant.maxLevel", [$maxLevel]));
-			return true;
-		}
-		$enchantment->setLevel($enchantLevel);
+        if($item->getId() <= 0){
+            $sender->sendMessage(new TranslationContainer("commands.enchant.noItem"));
+            return true;
+        }
 
-		$item = $player->getInventory()->getItemInHand();
+        if(is_numeric($args[1])){
+            $enchantment = Enchantment::getEnchantment((int) $args[1]);
+        }else{
+            $enchantment = Enchantment::getEnchantmentByName($args[1]);
+        }
 
-		if($item->getId() <= 0){
-			$sender->sendMessage(new TranslationContainer("commands.enchant.noItem"));
-			return true;
-		}
+        if(!($enchantment instanceof Enchantment)){
+            $sender->sendMessage(new TranslationContainer("commands.enchant.notFound", [$args[1]]));
+            return true;
+        }
 
-		if(Enchantment::getEnchantAbility($item) === 0){
-			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.enchant.cantEnchant"));
-			return true;
-		}
-
-		$item->addEnchantment($enchantment);
-		$player->getInventory()->setItemInHand($item);
+        $item->addEnchantment(new EnchantmentInstance($enchantment, (int) ($args[2] ?? 1)));
+        $player->getInventory()->setItemInHand($item);
 
 
-		self::broadcastCommandMessage($sender, new TranslationContainer("%commands.enchant.success"));
+        self::broadcastCommandMessage($sender, new TranslationContainer("%commands.enchant.success", [$player->getName()]));
 		return true;
 	}
 }

@@ -2,66 +2,83 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
 */
+
+declare(strict_types=1);
 
 namespace pocketmine\nbt\tag;
 
 use pocketmine\nbt\NBT;
+use pocketmine\nbt\NBTStream;
 
 #include <rules/NBT.h>
 
-class IntArrayTag extends NamedTag {
+class IntArrayTag extends NamedTag{
 
-	/**
-	 * @return int
-	 */
-	public function getType(){
-		return NBT::TAG_IntArray;
-	}
+    /**
+     * IntArrayTag constructor.
+     *
+     * @param string $name
+     * @param int[]  $value
+     */
+    public function __construct(string $name = "", array $value = []){
+        parent::__construct($name, $value);
+    }
 
-	/**
-	 * @param NBT  $nbt
-	 * @param bool $network
-	 *
-	 * @return mixed|void
-	 */
-	public function read(NBT $nbt, bool $network = false){
-		$size = $nbt->getInt($network);
-		$this->value = array_values(unpack($nbt->endianness === NBT::LITTLE_ENDIAN ? "V*" : "N*", $nbt->get($size * 4)));
-	}
+    public function getType() : int{
+        return NBT::TAG_IntArray;
+    }
 
-	/**
-	 * @param NBT  $nbt
-	 * @param bool $network
-	 *
-	 * @return mixed|void
-	 */
-	public function write(NBT $nbt, bool $network = false){
-		$nbt->putInt(count($this->value), $network);
-		$nbt->put(pack($nbt->endianness === NBT::LITTLE_ENDIAN ? "V*" : "N*", ...$this->value));
-	}
+    public function read(NBTStream $nbt){
+        $this->value = $nbt->getIntArray();
+    }
 
-	/**
-	 * @return string
-	 */
-	public function __toString(){
-		$str = get_class($this) . "{\n";
-		$str .= implode(", ", $this->value);
-		return $str . "}";
-	}
+    public function write(NBTStream $nbt){
+        $nbt->putIntArray($this->value);
+    }
+
+    public function __toString(){
+        $str = get_class($this) . "{\n";
+        $str .= implode(", ", $this->value);
+        return $str . "}";
+    }
+
+    /**
+     * @return int[]
+     */
+    public function &getValue() : array{
+        return parent::getValue();
+    }
+
+    /**
+     * @param int[] $value
+     *
+     * @throws \TypeError
+     */
+    public function setValue($value){
+        if(!is_array($value)){
+            throw new \TypeError("IntArrayTag value must be of type int[], " . gettype($value) . " given");
+        }
+        assert(count(array_filter($value, function($v){
+                return !is_int($v);
+            })) === 0);
+
+        parent::setValue($value);
+    }
 }

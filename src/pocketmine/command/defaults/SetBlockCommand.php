@@ -2,26 +2,32 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
@@ -30,14 +36,8 @@ use pocketmine\math\Vector3;
 use pocketmine\item\ItemBlock;
 use pocketmine\item\Item;
 
+class SetBlockCommand extends VanillaCommand{
 
-class SetBlockCommand extends VanillaCommand {
-
-	/**
-	 * SetBlockCommand constructor.
-	 *
-	 * @param $name
-	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
@@ -47,21 +47,13 @@ class SetBlockCommand extends VanillaCommand {
 		$this->setPermission("pocketmine.command.setblock");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string        $currentAlias
-	 * @param array         $args
-	 *
-	 * @return bool
-	 */
-	public function execute(CommandSender $sender, $currentAlias, array $args){
-		if(!$this->testPermission($sender)){
+	public function execute(CommandSender $sender, string $currentAlias, array $args){
+		if(!$this->canExecute($sender)){
 			return true;
 		}
 
 		if(count($args) < 4 or count($args) > 5){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-			return false;
+            throw new InvalidCommandSyntaxException();
 		}
 
 		$itemblock = Item::fromString($args[3]);
@@ -78,8 +70,7 @@ class SetBlockCommand extends VanillaCommand {
 			}elseif(is_numeric($x)){
 				$x = (int) round($x);
 			}else{
-				$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-				return false;
+                throw new InvalidCommandSyntaxException();
 			}
 			if($y{0} === "~"){
 				if((is_numeric(trim($y, "~")) or trim($y, "~") === "") and ($sender instanceof Player)) $y = (int) round(trim($y, "~") + $sender->y);
@@ -87,20 +78,17 @@ class SetBlockCommand extends VanillaCommand {
 			}elseif(is_numeric($y)){
 				$y = (int) round($y);
 			}else{
-				$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-				return false;
+                throw new InvalidCommandSyntaxException();
 			}
 			if($z{0} === "~"){
 				if((is_numeric(trim($z, "~")) or trim($z, "~") === "") and ($sender instanceof Player)) $z = (int) round(trim($z, "~") + $sender->z);
 			}elseif(is_numeric($z)){
 				$z = (int) round($z);
 			}else{
-				$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-				return false;
+                throw new InvalidCommandSyntaxException();
 			}
 			if(!(is_integer($x) and is_integer($y) and is_integer($z))){
-				$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-				return false;
+                throw new InvalidCommandSyntaxException();
 			}
 
 			$pos = new Vector3($x, $y, $z);

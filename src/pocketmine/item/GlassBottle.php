@@ -2,28 +2,31 @@
 
 /*
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
  */
+
+declare(strict_types=1);
 
 namespace pocketmine\item;
 
 use pocketmine\block\Block;
 use pocketmine\event\player\PlayerGlassBottleEvent;
-use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class GlassBottle extends Item {
@@ -31,37 +34,17 @@ class GlassBottle extends Item {
 	 * GlassBottle constructor.
 	 *
 	 * @param int $meta
-	 * @param int $count
 	 */
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::GLASS_BOTTLE, $meta, $count, "Glass Bottle");
+	public function __construct(int $meta = 0){
+		parent::__construct(self::GLASS_BOTTLE, $meta, "Glass Bottle");
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canBeActivated() : bool{
-		return true;
-	}
-
-	/**
-	 * @param Level  $level
-	 * @param Player $player
-	 * @param Block  $block
-	 * @param Block  $target
-	 * @param        $face
-	 * @param        $fx
-	 * @param        $fy
-	 * @param        $fz
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Level $level, Player $player, Block $block, Block $target, $face, $fx, $fy, $fz){
+	public function onActivate(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickPos) : bool{
 		if($player === null or $player->isSurvival() !== true){
 			return false;
 		}
-		if($target->getId() === Block::STILL_WATER or $target->getId() === Block::WATER){
-			$player->getServer()->getPluginManager()->callEvent($ev = new PlayerGlassBottleEvent($player, $target, $this));
+		if($blockClicked->getId() === Block::STILL_WATER or $blockClicked->getId() === Block::WATER){
+			$player->getServer()->getPluginManager()->callEvent($ev = new PlayerGlassBottleEvent($player, $blockClicked, $this));
 			if($ev->isCancelled()){
 				return false;
 			}else{

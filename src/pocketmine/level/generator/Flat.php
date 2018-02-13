@@ -38,6 +38,7 @@ use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
 
 class Flat extends Generator {
+
 	/** @var ChunkManager */
 	private $level;
 	/** @var Chunk */
@@ -51,7 +52,7 @@ class Flat extends Generator {
 	/**
 	 * @return array
 	 */
-	public function getSettings(){
+	public function getSettings() : array{
 		return $this->options;
 	}
 
@@ -59,7 +60,7 @@ class Flat extends Generator {
 	 * @return string
 	 */
 	public function getName() : string{
-		return "flat";
+		return "Flat";
 	}
 
 	/**
@@ -187,7 +188,7 @@ class Flat extends Generator {
 	 *
 	 * @return mixed|void
 	 */
-	public function generateChunk($chunkX, $chunkZ){
+	public function generateChunk(int $chunkX, int $chunkZ){
 		if($this->chunk === null){
 			if(isset($this->options["preset"]) and $this->options["preset"] != ""){
 				$this->parsePreset($this->options["preset"], $chunkX, $chunkZ);
@@ -207,7 +208,7 @@ class Flat extends Generator {
 	 *
 	 * @return mixed|void
 	 */
-	public function populateChunk($chunkX, $chunkZ){
+	public function populateChunk(int $chunkX, int $chunkZ){
 		$this->random->setSeed(0xdeadbeef ^ ($chunkX << 8) ^ $chunkZ ^ $this->level->getSeed());
 		foreach($this->populators as $populator){
 			$populator->populate($this->level, $chunkX, $chunkZ, $this->random);
@@ -215,10 +216,7 @@ class Flat extends Generator {
 
 	}
 
-	/**
-	 * @return Vector3
-	 */
-	public function getSpawn(){
+	public function getSpawn() : Vector3{
 		return new Vector3(128, $this->floorLevel, 128);
 	}
 }

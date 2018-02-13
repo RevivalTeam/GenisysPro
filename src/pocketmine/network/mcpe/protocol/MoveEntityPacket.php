@@ -2,11 +2,11 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,51 +15,54 @@
  *
  * @author PocketMine Team
  * @link http://www.pocketmine.net/
- * 
+ *
  *
 */
+
+declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
+use pocketmine\math\Vector3;
 
-class MoveEntityPacket extends DataPacket {
-
+class MoveEntityPacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::MOVE_ENTITY_PACKET;
 
-	public $eid;
-	public $x;
-	public $y;
-	public $z;
+	/** @var int */
+	public $entityRuntimeId;
+	/** @var Vector3 */
+	public $position;
+	/** @var float */
 	public $yaw;
+	/** @var float */
 	public $headYaw;
+	/** @var float */
 	public $pitch;
-	public $byte1;
+	/** @var bool */
+	public $onGround = false;
+	/** @var bool */
+	public $teleported = false;
 
-	/**
-	 *
-	 */
-	public function decode(){
-		$this->eid = $this->getEntityId();
-		$this->getVector3f($this->x, $this->y, $this->z);
-		$this->pitch = $this->getByte() * (360.0 / 256);
-		$this->yaw = $this->getByte() * (360.0 / 256);
-		$this->headYaw = $this->getByte() * (360.0 / 256);
-		$this->byte1 = $this->getByte();
+	protected function decodePayload(){
+        $this->entityRuntimeId = $this->getEntityRuntimeId();
+        $this->position = $this->getVector3();
+        $this->pitch = $this->getByteRotation();
+        $this->headYaw = $this->getByteRotation();
+        $this->yaw = $this->getByteRotation();
+        $this->onGround = $this->getBool();
+        $this->teleported = $this->getBool();
 	}
 
-	/**
-	 *
-	 */
-	public function encode(){
-		$this->reset();
-		$this->putEntityId($this->eid);
-		$this->putVector3f($this->x, $this->y, $this->z);
-		$this->putByte($this->pitch / (360.0 / 256));
-		$this->putByte($this->yaw / (360.0 / 256));
-		$this->putByte($this->headYaw / (360.0 / 256));
-		$this->putByte($this->byte1);
+	protected function encodePayload(){
+        $this->putEntityRuntimeId($this->entityRuntimeId);
+        $this->putVector3($this->position);
+        $this->putByteRotation($this->pitch);
+        $this->putByteRotation($this->headYaw);
+        $this->putByteRotation($this->yaw);
+        $this->putBool($this->onGround);
+        $this->putBool($this->teleported);
 	}
 
 }

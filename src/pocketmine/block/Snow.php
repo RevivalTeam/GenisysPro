@@ -2,78 +2,60 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ *
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
+ *
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
-use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\TieredTool;
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
 
-class Snow extends Solid {
+class Snow extends Solid{
 
 	protected $id = self::SNOW_BLOCK;
 
-	/**
-	 * Snow constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return float
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.2;
 	}
 
-	public function getToolType(){
-		return Tool::TYPE_SHOVEL;
-	}
+    public function getToolType() : int{
+        return BlockToolType::TYPE_SHOVEL;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getName() : string{
-		return "Snow Block";
-	}
+    public function getToolHarvestLevel() : int{
+        return TieredTool::TIER_WOODEN;
+    }
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		if($item->isShovel() !== false){
-			if($item->getEnchantmentLevel(Enchantment::TYPE_MINING_SILK_TOUCH) > 0){
-				return [
-					[Item::SNOW_BLOCK, 0, 1],
-				];
-			}else{
-				return [
-					[Item::SNOWBALL, 0, 4],
-				];
-			}
-		}else{
-			return [];
-		}
-	}
+    public function getName() : string{
+        return "Snow Block";
+    }
+
+	public function getDropsForCompatibleTool(Item $item): array{
+        return [
+            Item::get(Item::SNOWBALL, 0, 4)
+        ];
+    }
 }

@@ -2,154 +2,83 @@
 
 /*
  *
- *  _____            _               _____           
- * / ____|          (_)             |  __ \          
- *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
- *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
- *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
- * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
- *                         __/ |                    
- *                        |___/                     
+ *
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author GenisysPro
- * @link https://github.com/GenisysPro/GenisysPro
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\TieredTool;
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
-use pocketmine\math\AxisAlignedBB;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\tile\EnderChest as TileEnderChest;
 use pocketmine\tile\Tile;
 
-class EnderChest extends Transparent {
+class EnderChest extends Chest{
 
 	protected $id = self::ENDER_CHEST;
 
-	/**
-	 * EnderChest constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
-		$this->meta = $meta;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function canBeActivated() : bool{
-		return true;
-	}
-
-	/**
-	 * @return float
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 22.5;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getResistance(){
+	public function getBlastResistance() : float{
 		return 3000;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getLightLevel(){
+	public function getLightLevel() : int{
 		return 7;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Ender Chest";
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
 
-	/**
-	 * @return AxisAlignedBB
-	 */
-	protected function recalculateBoundingBox(){
-		return new AxisAlignedBB(
-			$this->x + 0.0625,
-			$this->y,
-			$this->z + 0.0625,
-			$this->x + 0.9375,
-			$this->y + 0.9475,
-			$this->z + 0.9375
-		);
-	}
+    public function getToolHarvestLevel() : int{
+        return TieredTool::TIER_WOODEN;
+    }
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		$faces = [
-			0 => 4,
-			1 => 2,
-			2 => 5,
-			3 => 3,
-		];
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+        $faces = [
+            0 => 4,
+            1 => 2,
+            2 => 5,
+            3 => 3
+        ];
 
-		$this->meta = $faces[$player instanceof Player ? $player->getDirection() : 0];
+        $this->meta = $faces[$player instanceof Player ? $player->getDirection() : 0];
 
-		$this->getLevel()->setBlock($block, $this, true, true);
-		$nbt = new CompoundTag("", [
-			new StringTag("id", Tile::ENDER_CHEST),
-			new IntTag("x", $this->x),
-			new IntTag("y", $this->y),
-			new IntTag("z", $this->z)
-		]);
-
-		if($item->hasCustomName()){
-			$nbt->CustomName = new StringTag("CustomName", $item->getCustomName());
-		}
-
-		Tile::createTile("EnderChest", $this->getLevel(), $nbt);
+        $this->getLevel()->setBlock($blockReplace, $this, true, true);
+        Tile::createTile(Tile::ENDER_CHEST, $this->getLevel(), TileEnderChest::createNBT($this, $face, $item, $player));
 
 		return true;
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Item $item, Player $player = null){
+	public function onActivate(Item $item, Player $player = null) : bool{
 		if($player instanceof Player){
 			$top = $this->getSide(1);
 			if($top->isTransparent() !== true){
@@ -157,17 +86,7 @@ class EnderChest extends Transparent {
 			}
 
 			if(!($this->getLevel()->getTile($this) instanceof TileEnderChest)){
-				$nbt = new CompoundTag("", [
-					new StringTag("id", Tile::ENDER_CHEST),
-					new IntTag("x", $this->x),
-					new IntTag("y", $this->y),
-					new IntTag("z", $this->z)
-				]);
-				Tile::createTile("EnderChest", $this->getLevel(), $nbt);
-			}
-
-			if($player->isCreative() and $player->getServer()->limitedCreative){
-				return true;
+				Tile::createTile(Tile::ENDER_CHEST, $this->getLevel(), TileEnderChest::createNBT($this));
 			}
 
 			$player->getEnderChestInventory()->openAt($this);
@@ -176,20 +95,13 @@ class EnderChest extends Transparent {
 		return true;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		if($item->hasEnchantment(Enchantment::TYPE_MINING_SILK_TOUCH)){
-			return [
-				[$this->id, 0, 1],
-			];
-		}
-		return [
-			[Item::OBSIDIAN, 0, 8],
-		];
-	}
+	public function getDropsForCompatibleTool(Item $item): array{
+        return [
+            Item::get(Item::OBSIDIAN, 0, 8)
+        ];
+    }
 
+    public function getFuelTime() : int{
+        return 0;
+    }
 }

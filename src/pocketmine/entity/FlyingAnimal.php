@@ -2,20 +2,21 @@
 
 /*
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
  */
 
@@ -42,7 +43,7 @@ abstract class FlyingAnimal extends Creature implements Ageable {
 	 *
 	 * @return bool
 	 */
-	public function onUpdate($currentTick){
+	public function onUpdate(int $currentTick){
 		if($this->closed !== false){
 			return false;
 		}
@@ -125,23 +126,22 @@ abstract class FlyingAnimal extends Creature implements Ageable {
 
 	public function initEntity(){
 		parent::initEntity();
-		$this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_BABY, false);
+		$this->setGenericFlag(self::DATA_FLAG_BABY, false);
 	}
 
 	/**
 	 * @return bool
 	 */
 	public function isBaby(){
-		return $this->getDataFlag(self::DATA_FLAGS, self::DATA_FLAG_BABY);
+		return $this->getGenericFlag(self::DATA_FLAG_BABY);
 	}
 
-	/**
-	 * @param float             $damage
-	 * @param EntityDamageEvent $source
-	 *
-	 * @return bool|void
-	 */
-	public function attack($damage, EntityDamageEvent $source){
+    /**
+     * @param EntityDamageEvent $source
+     * @return bool|void
+     * @internal param float $damage
+     */
+	public function attack(EntityDamageEvent $source){
 		if($source->isCancelled()){
 			return;
 		}
@@ -149,7 +149,7 @@ abstract class FlyingAnimal extends Creature implements Ageable {
 			$source->setCancelled();
 			return;
 		}
-		parent::attack($damage, $source);
+		parent::attack($source);
 	}
 
 }

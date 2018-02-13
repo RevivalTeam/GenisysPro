@@ -43,7 +43,7 @@ interface SourceInterface {
 	 *
 	 * @return int
 	 */
-	public function putPacket(Player $player, DataPacket $packet, $needACK = false, $immediate = true);
+	public function putPacket(Player $player, DataPacket $packet, bool $needACK = false, bool $immediate = true);
 
 	/**
 	 * Terminates the connection
@@ -52,20 +52,21 @@ interface SourceInterface {
 	 * @param string $reason
 	 *
 	 */
-	public function close(Player $player, $reason = "unknown reason");
+	public function close(Player $player, string $reason = "unknown reason");
 
 	/**
 	 * @param string $name
 	 */
-	public function setName($name);
+	public function setName(string $name);
 
 	/**
 	 * @return bool
 	 */
-	public function process();
+	public function process() : bool;
 
 	public function shutdown();
 
-	public function emergencyShutdown();
+    public function start();
 
+    public function emergencyShutdown();
 }

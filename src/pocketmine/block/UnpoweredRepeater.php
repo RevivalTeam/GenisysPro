@@ -2,59 +2,58 @@
 
 /*
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
+ *
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
- */
+ *
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
-
-use pocketmine\item\Item;
 
 class UnpoweredRepeater extends PoweredRepeater {
 	protected $id = self::UNPOWERED_REPEATER_BLOCK;
 
-	/**
+	public function __construct($meta = 0){
+        parent::__construct($meta);
+        $this->isPowered = false;
+    }
+
+    /**
 	 * @return string
 	 */
 	public function getName() : string{
 		return "Unpowered Repeater";
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getStrength(){
-		return 0;
-	}
+	protected function getUnpowered(): Block{
+        return $this;
+    }
 
-	/**
-	 * @param Block|null $from
-	 *
-	 * @return bool
-	 */
+    protected function getPowered(): Block{
+        return new PoweredRepeater($this->meta);
+    }
+
 	public function isActivated(Block $from = null){
 		return false;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return mixed|void
-	 */
-	public function onBreak(Item $item){
-		$this->getLevel()->setBlock($this, new Air(), true);
-	}
+	public function getLightLevel() : int{
+        return 0;
+    }
 }

@@ -2,32 +2,33 @@
 
 /*
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
+ *
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
- */
+ *
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
-use pocketmine\nbt\NBT;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ListTag;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\tile\Chest as TileChest;
@@ -36,18 +37,10 @@ use pocketmine\tile\Tile;
 class TrappedChest extends RedstoneSource {
 	protected $id = self::TRAPPED_CHEST;
 
-	/**
-	 * TrappedChest constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return AxisAlignedBB
-	 */
 	public function getBoundingBox(){
 		if($this->boundingBox === null){
 			$this->boundingBox = $this->recalculateBoundingBox();
@@ -55,87 +48,43 @@ class TrappedChest extends RedstoneSource {
 		return $this->boundingBox;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function isSolid(){
+	public function isSolid() : bool{
 		return true;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canBeFlowedInto(){
+	public function canBeFlowedInto() : bool{
 		return false;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canBeActivated() : bool{
-		return true;
-	}
-
-	/**
-	 * @return float
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 2.5;
 	}
 
-	/**
-	 * @return float|int
-	 */
-	public function getResistance(){
-		return $this->getHardness() * 5;
-	}
-
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Trapped Chest";
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_AXE;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_AXE;
 	}
 
-	/**
-	 * @return AxisAlignedBB
-	 */
 	protected function recalculateBoundingBox(){
-		return new AxisAlignedBB(
-			$this->x + 0.0625,
-			$this->y,
-			$this->z + 0.0625,
-			$this->x + 0.9375,
-			$this->y + 0.9475,
-			$this->z + 0.9375
-		);
+        return new AxisAlignedBB(
+            $this->x + 0.025,
+            $this->y,
+            $this->z + 0.025,
+            $this->x + 0.975,
+            $this->y + 0.95,
+            $this->z + 0.975
+        );
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
 		$faces = [
-			0 => 4,
-			1 => 2,
-			2 => 5,
-			3 => 3,
+			0 => 2,
+			1 => 5,
+			2 => 3,
+			3 => 4,
 		];
 
 		$chest = null;
@@ -157,27 +106,8 @@ class TrappedChest extends RedstoneSource {
 			}
 		}
 
-		$this->getLevel()->setBlock($block, $this, true, true);
-		$nbt = new CompoundTag("", [
-			new ListTag("Items", []),
-			new StringTag("id", Tile::CHEST),
-			new IntTag("x", $this->x),
-			new IntTag("y", $this->y),
-			new IntTag("z", $this->z)
-		]);
-		$nbt->Items->setTagType(NBT::TAG_Compound);
-
-		if($item->hasCustomName()){
-			$nbt->CustomName = new StringTag("CustomName", $item->getCustomName());
-		}
-
-		if($item->hasCustomBlockData()){
-			foreach($item->getCustomBlockData() as $key => $v){
-				$nbt->{$key} = $v;
-			}
-		}
-
-		$tile = Tile::createTile("Chest", $this->getLevel(), $nbt);
+		$this->getLevel()->setBlock($blockReplace, $this, true, true);
+		$tile = Tile::createTile(Tile::CHEST, $this->getLevel(), TileChest::createNBT($this, $face, $item, $player));
 
 		if($chest instanceof TileChest and $tile instanceof TileChest){
 			$chest->pairWith($tile);
@@ -187,12 +117,7 @@ class TrappedChest extends RedstoneSource {
 		return true;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return bool
-	 */
-	public function onBreak(Item $item){
+	public function onBreak(Item $item, Player $player = null) : bool{
 		$t = $this->getLevel()->getTile($this);
 		if($t instanceof TileChest){
 			$t->unpair();
@@ -202,13 +127,7 @@ class TrappedChest extends RedstoneSource {
 		return true;
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Item $item, Player $player = null){
+	public function onActivate(Item $item, Player $player = null) : bool{
 		if($player instanceof Player){
 			$top = $this->getSide(1);
 			if($top->isTransparent() !== true){
@@ -220,15 +139,7 @@ class TrappedChest extends RedstoneSource {
 			if($t instanceof TileChest){
 				$chest = $t;
 			}else{
-				$nbt = new CompoundTag("", [
-					new ListTag("Items", []),
-					new StringTag("id", Tile::CHEST),
-					new IntTag("x", $this->x),
-					new IntTag("y", $this->y),
-					new IntTag("z", $this->z)
-				]);
-				$nbt->Items->setTagType(NBT::TAG_Compound);
-				$chest = Tile::createTile("Chest", $this->getLevel(), $nbt);
+				$chest = Tile::createTile(Tile::CHEST, $this->getLevel(), TileChest::createNBT($this));
 			}
 
 			if(isset($chest->namedtag->Lock) and $chest->namedtag->Lock instanceof StringTag){
@@ -237,23 +148,26 @@ class TrappedChest extends RedstoneSource {
 				}
 			}
 
-			if($player->isCreative() and $player->getServer()->limitedCreative){
-				return true;
-			}
 			$player->addWindow($chest->getInventory());
+			$this->level->updateAroundRedstone($this, [self::SIDE_DOWN, self::SIDE_NORTH, self::SIDE_SOUTH, self::SIDE_WEST, self::SIDE_EAST]);
 		}
 
 		return true;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		return [
-			[$this->id, 0, 1],
-		];
-	}
+	public function getWeakPower(int $side): int{
+        $playerCount = 0;
+
+        $t = $this->getLevel()->getTile($this);
+
+        if($t instanceof TileChest){
+            $playerCount = count($t->getInventory()->getViewers());
+        }
+
+        return $playerCount < 0 ? 0 : $playerCount > 15 ? 15 : $playerCount;
+    }
+
+    public function isRedstoneSource(){
+        return true;
+    }
 }

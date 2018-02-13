@@ -2,86 +2,65 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ *
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
+ *
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
-use pocketmine\item\Item;
-use pocketmine\item\Tool;
+use pocketmine\item\TieredTool;
 
 class Coal extends Solid {
 
 	protected $id = self::COAL_BLOCK;
 
-	/**
-	 * Coal constructor.
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 5;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
-	}
+    public function getToolType() : int{
+        return BlockToolType::TYPE_PICKAXE;
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getBurnChance() : int{
+    public function getToolHarvestLevel() : int{
+        return TieredTool::TIER_WOODEN;
+    }
+
+    public function getName() : string{
+        return "Coal Block";
+    }
+
+    public function getBurnChance() : int{
 		return 5;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getBurnAbility() : int{
+    public function getBurnAbility() : int{
 		return 5;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getName() : string{
-		return "Coal Block";
-	}
-
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		if($item->isPickaxe() >= 1){
-			return [
-				[Item::COAL_BLOCK, 0, 1],
-			];
-		}else{
-			return [];
-		}
-	}
+    public function getFuelTime() : int{
+        return 16000;
+    }
 }

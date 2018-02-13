@@ -2,32 +2,36 @@
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ *    _______                    _
+ *   |__   __|                  (_)
+ *      | |_   _ _ __ __ _ _ __  _  ___
+ *      | | | | | '__/ _` | '_ \| |/ __|
+ *      | | |_| | | | (_| | | | | | (__
+ *      |_|\__,_|_|  \__,_|_| |_|_|\___|
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Turanic
  *
-*/
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\level\generator\object\Tree;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\utils\Random;
 
-class Sapling extends Flowable {
+class Sapling extends Flowable{
 	const OAK = 0;
 	const SPRUCE = 1;
 	const BIRCH = 2;
@@ -37,121 +41,80 @@ class Sapling extends Flowable {
 
 	protected $id = self::SAPLING;
 
-	/**
-	 * Sapling constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canBeActivated() : bool{
-		return true;
-	}
-
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
-		static $names = [
-			0 => "Oak Sapling",
-			1 => "Spruce Sapling",
-			2 => "Birch Sapling",
-			3 => "Jungle Sapling",
-			4 => "Acacia Sapling",
-			5 => "Dark Oak Sapling",
-			6 => "",
-			7 => "",
-		];
-		return $names[$this->meta & 0x07];
+        static $names = [
+            self::OAK => "Oak Sapling",
+            self::SPRUCE => "Spruce Sapling",
+            self::BIRCH => "Birch Sapling",
+            self::JUNGLE => "Jungle Sapling",
+            self::ACACIA => "Acacia Sapling",
+            self::DARK_OAK => "Dark Oak Sapling"
+        ];
+        return $names[$this->getVariant()] ?? "Unknown";
 	}
 
+    public function ticksRandomly() : bool{
+        return true;
+    }
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		$down = $this->getSide(0);
-		if($down->getId() === self::GRASS or $down->getId() === self::DIRT or $down->getId() === self::FARMLAND or $down->getId() === self::PODZOL){
-			$this->getLevel()->setBlock($block, $this, true, true);
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+        $down = $this->getSide(Vector3::SIDE_DOWN);
+        if($down->getId() === self::GRASS or $down->getId() === self::DIRT or $down->getId() === self::FARMLAND){
+            $this->getLevel()->setBlock($blockReplace, $this, true, true);
 
-			return true;
-		}
+            return true;
+        }
+
+        return false;
+	}
+
+	public function onActivate(Item $item, Player $player = null) : bool{
+        if($item->getId() === Item::DYE and $item->getDamage() === 0x0F){ //Bonemeal
+            //TODO: change log type
+            Tree::growTree($this->getLevel(), $this->x, $this->y, $this->z, new Random(mt_rand()), $this->getVariant());
+
+            $item->count--;
+
+            return true;
+        }
 
 		return false;
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Item $item, Player $player = null){
-		if($item->getId() === Item::DYE and $item->getDamage() === 0x0F){ //Bonemeal
-			//TODO: change log type
-			Tree::growTree($this->getLevel(), $this->x, $this->y, $this->z, new Random(mt_rand()), $this->meta & 0x07, false);
-			if(($player->gamemode & 0x01) === 0){
-				$item->count--;
-			}
-
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * @param int $type
-	 *
-	 * @return bool|int
-	 */
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if($this->getSide(0)->isTransparent() === true){
-				$this->getLevel()->useBreakOn($this);
+			if($this->getSide(Vector3::SIDE_DOWN)->isTransparent() === true){
+                $this->getLevel()->useBreakOn($this);
 
-				return Level::BLOCK_UPDATE_NORMAL;
-			}
+                return Level::BLOCK_UPDATE_NORMAL;
+            }
 		}elseif($type === Level::BLOCK_UPDATE_RANDOM){ //Growth
 			if(mt_rand(1, 7) === 1){
-				if(($this->meta & 0x08) === 0x08){
-					Tree::growTree($this->getLevel(), $this->x, $this->y, $this->z, new Random(mt_rand()), $this->meta & 0x07, false);
-				}else{
-					$this->meta |= 0x08;
-					$this->getLevel()->setBlock($this, $this, true);
+                if(($this->meta & 0x08) === 0x08){
+                    Tree::growTree($this->getLevel(), $this->x, $this->y, $this->z, new Random(mt_rand()), $this->getVariant());
+                }else{
+                    $this->meta |= 0x08;
+                    $this->getLevel()->setBlock($this, $this, true);
 
-					return Level::BLOCK_UPDATE_RANDOM;
-				}
-			}else{
-				return Level::BLOCK_UPDATE_RANDOM;
-			}
+                    return Level::BLOCK_UPDATE_RANDOM;
+                }
+            }else{
+                return Level::BLOCK_UPDATE_RANDOM;
+            }
 		}
 
 		return false;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		return [
-			[$this->id, $this->meta & 0x07, 1],
-		];
-	}
+	public function getVariantBitmask(): int{
+        return 0x07;
+    }
+
+    public function getFuelTime(): int{
+        return 100;
+    }
 }
