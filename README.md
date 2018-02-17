@@ -74,8 +74,6 @@ TODO List
 - [x] Add Ender generator.
 - [ ] Add/Enhance Mob AI with option in yml.
  
-GenisysPro still has a long way to go. We are pleased to receive help from everybody and welcome contributors.  
- 
  Items TODO list:
  
  
@@ -83,12 +81,14 @@ GenisysPro still has a long way to go. We are pleased to receive help from every
 
 - [x] Add pistons+sticky pistons(not completely visible)
  
- - [x] Add ender crystal(not functional,but you can spawn one ender crystal)
+- [x] Add ender crystal(not functional,but you can spawn one ender crystal)
  
  - [x] Add bone block,red nether brick etc.
  
  - [x] Add observer,leash etc.(not leash)
  
+ GenisysPro still has a long way to go. We are pleased to receive help from everybody and welcome contributors.  
+ 
 
 Help & Support
 
