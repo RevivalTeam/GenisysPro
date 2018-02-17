@@ -1,28 +1,36 @@
 <?php
 
-/*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+/**
  *
  *
-*/
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\command\defaults;
 
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\item\Item;
 use pocketmine\item\ItemBlock;
@@ -31,13 +39,8 @@ use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
-class FillCommand extends VanillaCommand {
+class FillCommand extends VanillaCommand{
 
-	/**
-	 * FillCommand constructor.
-	 *
-	 * @param $name
-	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
@@ -47,15 +50,8 @@ class FillCommand extends VanillaCommand {
 		$this->setPermission("pocketmine.command.fill");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string        $label
-	 * @param array         $args
-	 *
-	 * @return bool
-	 */
-	public function execute(CommandSender $sender, $label, array $args){
-		if(!$this->testPermission($sender)){
+    public function execute(CommandSender $sender, string $label, array $args){
+		if(!$this->canExecute($sender)){
 			return true;
 		}
 
@@ -95,25 +91,15 @@ class FillCommand extends VanillaCommand {
 					return false;
 				}
 				$sender->sendMessage(TextFormat::RED . new TranslationContainer($args[$a] . " is not a valid coordinate.", []));
-				$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-				return false;
+                throw new InvalidCommandSyntaxException();
 			}
 			$sender->sendMessage(TextFormat::RED . new TranslationContainer("pocketmine.command.fill.missingParameter", []));
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-			return false;
+            throw new InvalidCommandSyntaxException();
 		}
 
 		return false;
 	}
 
-	/**
-	 * @param Vector3   $p
-	 * @param Level     $lvl
-	 * @param ItemBlock $b
-	 * @param int       $meta
-	 *
-	 * @return bool
-	 */
 	private function setBlock(Vector3 $p, Level $lvl, ItemBlock $b, int $meta = 0) : bool{
 		$block = $b->getBlock();
 		$block->setDamage($meta);

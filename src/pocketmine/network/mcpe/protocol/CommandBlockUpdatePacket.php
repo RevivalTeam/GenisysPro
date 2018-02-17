@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -19,35 +42,46 @@
  *
 */
 
+declare(strict_types=1);
+
 
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-class CommandBlockUpdatePacket extends DataPacket {
+
+class CommandBlockUpdatePacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::COMMAND_BLOCK_UPDATE_PACKET;
 
+	/** @var bool */
 	public $isBlock;
 
+	/** @var int */
 	public $x;
+	/** @var int */
 	public $y;
+	/** @var int */
 	public $z;
+	/** @var int */
 	public $commandBlockMode;
+	/** @var bool */
 	public $isRedstoneMode;
+	/** @var bool */
 	public $isConditional;
 
+	/** @var int */
 	public $minecartEid;
 
+	/** @var string */
 	public $command;
+	/** @var string */
 	public $lastOutput;
+	/** @var string */
 	public $name;
-
+	/** @var bool */
 	public $shouldTrackOutput;
 
-	/**
-	 *
-	 */
-	public function decode(){
+	protected function decodePayload(){
 		$this->isBlock = $this->getBool();
 
 		if($this->isBlock){
@@ -67,11 +101,7 @@ class CommandBlockUpdatePacket extends DataPacket {
 		$this->shouldTrackOutput = $this->getBool();
 	}
 
-	/**
-	 *
-	 */
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putBool($this->isBlock);
 
 		if($this->isBlock){
@@ -89,5 +119,4 @@ class CommandBlockUpdatePacket extends DataPacket {
 
 		$this->putBool($this->shouldTrackOutput);
 	}
-
 }

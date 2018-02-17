@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -22,6 +45,14 @@
 namespace pocketmine\level\generator\normal\biome;
 
 
+use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
+use pocketmine\level\generator\normal\populator\Temple;
+use pocketmine\level\generator\normal\populator\Well;
+use pocketmine\level\generator\populator\Cactus;
+use pocketmine\level\generator\populator\DeadBush;
+use pocketmine\level\generator\populator\Sugarcane;
+
 class DesertBiome extends SandyBiome {
 
 	/**
@@ -29,10 +60,67 @@ class DesertBiome extends SandyBiome {
 	 */
 	public function __construct(){
 		parent::__construct();
-		$this->setElevation(63, 74);
+        $deadBush = new DeadBush();
+        $deadBush->setBaseAmount(1);
+        $deadBush->setRandomAmount(4);
 
-		$this->temperature = 2;
+        $sugarCane = new Sugarcane();
+        $sugarCane->setRandomAmount(20);
+        $sugarCane->setBaseAmount(3);
+
+        $sugarCane = new Cactus();
+        $sugarCane->setRandomAmount(2);
+        $sugarCane->setBaseAmount(3);
+
+        $temple = new Temple();
+        $well = new Well();
+
+        $this->addPopulator($well);
+        $this->addPopulator($temple);
+        $this->addPopulator($deadBush);
+        $this->addPopulator($sugarCane);
+
+		$this->setElevation(63, 71);
+
+		$this->temperature = 0.5;
 		$this->rainfall = 0;
+        $this->setGroundCover([
+            BlockFactory::get(Block::SAND, 0),
+            BlockFactory::get(Block::SAND, 0),
+            BlockFactory::get(Block::SAND, 0),
+            BlockFactory::get(Block::SAND, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+            BlockFactory::get(Block::SANDSTONE, 0),
+        ]);
 	}
 
 	/**

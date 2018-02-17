@@ -1,12 +1,35 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,57 +38,53 @@
  *
  * @author PocketMine Team
  * @link http://www.pocketmine.net/
- * 
+ *
  *
 */
+
+declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-
-class UpdateBlockPacket extends DataPacket {
-
+class UpdateBlockPacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::UPDATE_BLOCK_PACKET;
 
-	const FLAG_NONE = 0b0000;
+	const FLAG_NONE      = 0b0000;
 	const FLAG_NEIGHBORS = 0b0001;
-	const FLAG_NETWORK = 0b0010;
+	const FLAG_NETWORK   = 0b0010;
 	const FLAG_NOGRAPHIC = 0b0100;
-	const FLAG_PRIORITY = 0b1000;
+	const FLAG_PRIORITY  = 0b1000;
 
-	const FLAG_ALL = (self::FLAG_NEIGHBORS | self::FLAG_NETWORK);
-	const FLAG_ALL_PRIORITY = (self::FLAG_ALL | self::FLAG_PRIORITY);
+	const FLAG_ALL = self::FLAG_NEIGHBORS | self::FLAG_NETWORK;
+	const FLAG_ALL_PRIORITY = self::FLAG_ALL | self::FLAG_PRIORITY;
 
+	/** @var int */
 	public $x;
+	/** @var int */
 	public $z;
+	/** @var int */
 	public $y;
+	/** @var int */
 	public $blockId;
+	/** @var int */
 	public $blockData;
+	/** @var int */
 	public $flags;
 
-	/**
-	 *
-	 */
-	public function decode(){
-
+	protected function decodePayload(){
+		$this->getBlockPosition($this->x, $this->y, $this->z);
+		$this->blockId = $this->getUnsignedVarInt();
+		$aux = $this->getUnsignedVarInt();
+		$this->blockData = $aux & 0x0f;
+		$this->flags = $aux >> 4;
 	}
 
-	/**
-	 *
-	 */
-	public function encode(){
-		$this->reset();
-		$this->putBlockCoords($this->x, $this->y, $this->z);
+	protected function encodePayload(){
+		$this->putBlockPosition($this->x, $this->y, $this->z);
 		$this->putUnsignedVarInt($this->blockId);
 		$this->putUnsignedVarInt(($this->flags << 4) | $this->blockData);
-	}
-
-	/**
-	 * @return PacketName|string
-	 */
-	public function getName(){
-		return "UpdateBlockPacket";
 	}
 
 }

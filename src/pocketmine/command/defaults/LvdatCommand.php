@@ -1,39 +1,41 @@
 <?php
 
-/*
+/**
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
  *
  */
 
+declare(strict_types=1);
+
 namespace pocketmine\command\defaults;
 
-
 use pocketmine\command\CommandSender;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\level\format\io\BaseLevelProvider;
 use pocketmine\nbt\tag\StringTag;
 
 class LvdatCommand extends VanillaCommand {
 
-	/**
-	 * LvdatCommand constructor.
-	 *
-	 * @param $name
-	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
@@ -43,21 +45,13 @@ class LvdatCommand extends VanillaCommand {
 		$this->setPermission("pocketmine.command.lvdat");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string        $currentAlias
-	 * @param array         $args
-	 *
-	 * @return bool
-	 */
-	public function execute(CommandSender $sender, $currentAlias, array $args){
-		if(!$this->testPermission($sender)){
+	public function execute(CommandSender $sender, string $currentAlias, array $args){
+		if(!$this->canExecute($sender)){
 			return false;
 		}
 		$levname = array_shift($args);
 		if($levname == ""){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-			return false;
+            throw new InvalidCommandSyntaxException();
 		}
 		if(!$this->autoLoad($sender, $levname)){
 			$sender->sendMessage(new TranslationContainer("pocketmine.command.lvdat.nofound", [$levname]));
@@ -78,12 +72,12 @@ class LvdatCommand extends VanillaCommand {
 				$sender->sendMessage(new TranslationContainer("pocketmine.command.lvdat.fixname", [$level->getFolderName()]));
 				break;
 			case "help":
-				$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
 				$sender->sendMessage("/lvdat %commands.generic.level fixname");
 				$sender->sendMessage("/lvdat %commands.generic.level seed %commands.generic.seed");
 				$sender->sendMessage("/lvdat %commands.generic.level name %commands.generic.name");
 				$sender->sendMessage("/lvdat %commands.generic.level generator %commands.generic.generator");
 				$sender->sendMessage("/lvdat %commands.generic.level preset %pocketmine.command.lvdat.preset");
+                throw new InvalidCommandSyntaxException();
 				break;
 			case "seed":
 				if($p == ""){
@@ -118,19 +112,12 @@ class LvdatCommand extends VanillaCommand {
 				$sender->sendMessage(new TranslationContainer("pocketmine.command.lvdat.changed", [$level->getFolderName(), $o]));
 				break;
 			default:
-				$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-				return false;
+                throw new InvalidCommandSyntaxException();
 		}
 		$provider->saveLevelData();
 		return true;
 	}
 
-	/**
-	 * @param CommandSender $c
-	 * @param               $world
-	 *
-	 * @return bool
-	 */
 	public function autoLoad(CommandSender $c, $world){
 		if($c->getServer()->isLevelLoaded($world)) return true;
 		if(!$c->getServer()->isLevelGenerated($world)){

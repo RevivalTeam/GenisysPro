@@ -1,29 +1,35 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\utils;
 
 use pocketmine\scheduler\FileWriteTask;
 use pocketmine\Server;
-
 
 /**
  * Config Class for simple config manipulation of multiple formats.
@@ -50,6 +56,11 @@ class Config {
 	private $correct = false;
 	/** @var int */
 	private $type = Config::DETECT;
+    /** @var int */
+    private $jsonOptions = JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING;
+
+    /** @var bool */
+    private $changed = false;
 
 	public static $formats = [
 		"properties" => Config::PROPERTIES,
@@ -89,6 +100,14 @@ class Config {
 		$this->correct = false;
 		$this->load($this->file, $this->type);
 	}
+
+	public function hasChanged() : bool{
+	    return $this->changed;
+    }
+
+    public function setChanged(bool $changed = true){
+        $this->changed = $changed;
+    }
 
 	/**
 	 * @param $str
@@ -187,7 +206,7 @@ class Config {
 						$content = $this->writeProperties();
 						break;
 					case Config::JSON:
-						$content = json_encode($this->config, JSON_PRETTY_PRINT | JSON_BIGINT_AS_STRING | JSON_UNESCAPED_UNICODE);
+                        $content = json_encode($this->config, $this->jsonOptions);
 						break;
 					case Config::YAML:
 						$content = yaml_emit($this->config, YAML_UTF8_ENCODING);
@@ -213,11 +232,81 @@ class Config {
 				}
 			}
 
+			$this->changed = true;
+
 			return true;
 		}else{
 			return false;
 		}
 	}
+
+    /**
+     * Sets the options for the JSON encoding when saving
+     *
+     * @param int $options
+     * @return Config $this
+     * @throws \RuntimeException if the Config is not in JSON
+     * @see json_encode
+     */
+    public function setJsonOptions(int $options) : Config{
+        if($this->type !== Config::JSON){
+            throw new \RuntimeException("Attempt to set JSON options for non-JSON config");
+        }
+        $this->jsonOptions = $options;
+        $this->changed = true;
+
+        return $this;
+    }
+
+    /**
+     * Enables the given option in addition to the currently set JSON options
+     *
+     * @param int $option
+     * @return Config $this
+     * @throws \RuntimeException if the Config is not in JSON
+     * @see json_encode
+     */
+    public function enableJsonOption(int $option) : Config{
+        if($this->type !== Config::JSON){
+            throw new \RuntimeException("Attempt to enable JSON option for non-JSON config");
+        }
+        $this->jsonOptions |= $option;
+        $this->changed = true;
+
+        return $this;
+    }
+
+    /**
+     * Disables the given option for the JSON encoding when saving
+     *
+     * @param int $option
+     * @return Config $this
+     * @throws \RuntimeException if the Config is not in JSON
+     * @see json_encode
+     */
+    public function disableJsonOption(int $option) : Config{
+        if($this->type !== Config::JSON){
+            throw new \RuntimeException("Attempt to disable JSON option for non-JSON config");
+        }
+        $this->jsonOptions &= ~$option;
+        $this->changed = true;
+
+        return $this;
+    }
+
+    /**
+     * Returns the options for the JSON encoding when saving
+     *
+     * @return int
+     * @throws \RuntimeException if the Config is not in JSON
+     * @see json_encode
+     */
+    public function getJsonOptions() : int{
+        if($this->type !== Config::JSON){
+            throw new \RuntimeException("Attempt to get JSON options for non-JSON config");
+        }
+        return $this->jsonOptions;
+    }
 
 	/**
 	 * @param $k
@@ -276,6 +365,7 @@ class Config {
 
 		$base = $value;
 		$this->nestedCache[$key] = $value;
+		$this->changed = true;
 	}
 
 	/**
@@ -309,6 +399,27 @@ class Config {
 		return $this->nestedCache[$key] = $base;
 	}
 
+    public function removeNested(string $key) {
+        $this->nestedCache = [];
+        $this->changed = true;
+
+        $vars = explode(".", $key);
+
+        $currentNode =& $this->config;
+        while(count($vars) > 0){
+            $nodeName = array_shift($vars);
+            if(isset($currentNode[$nodeName])){
+                if(empty($vars)){ //final node
+                    unset($currentNode[$nodeName]);
+                }elseif(is_array($currentNode[$nodeName])){
+                    $currentNode =& $currentNode[$nodeName];
+                }
+            }else{
+                break;
+            }
+        }
+    }
+
 	/**
 	 * @param       $k
 	 * @param mixed $default
@@ -325,6 +436,7 @@ class Config {
 	 */
 	public function set($k, $v = true){
 		$this->config[$k] = $v;
+		$this->changed = true;
 		foreach($this->nestedCache as $nestedKey => $nvalue){
 			if(substr($nestedKey, 0, strlen($k) + 1) === ($k . ".")){
 				unset($this->nestedCache[$nestedKey]);
@@ -337,6 +449,7 @@ class Config {
 	 */
 	public function setAll($v){
 		$this->config = $v;
+		$this->changed = true;
 	}
 
 	/**
@@ -360,6 +473,7 @@ class Config {
 	 */
 	public function remove($k){
 		unset($this->config[$k]);
+		$this->changed = true;
 	}
 
 	/**
@@ -397,6 +511,10 @@ class Config {
 				++$changed;
 			}
 		}
+
+		if($changed > 0){
+		    $this->changed = true;
+        }
 
 		return $changed;
 	}

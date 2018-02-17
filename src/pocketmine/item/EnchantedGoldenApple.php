@@ -1,73 +1,47 @@
 <?php
 
-/*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+/**
  *
  *
-*/
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\item;
 
 use pocketmine\entity\Effect;
-use pocketmine\entity\Entity;
-use pocketmine\entity\Human;
 
-class EnchantedGoldenApple extends Food {
-	/**
-	 * EnchantedGoldenApple constructor.
-	 *
-	 * @param int $meta
-	 * @param int $count
-	 */
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::ENCHANTED_GOLDEN_APPLE, $meta, $count, "Enchanted Golden Apple");
+class EnchantedGoldenApple extends GoldenApple {
+
+	public function __construct(int $meta = 0){
+        Food::__construct(self::ENCHANTED_GOLDEN_APPLE, $meta, "Enchanted Golden Apple"); //skip parent constructor
 	}
 
-	/**
-	 * @param Entity $entity
-	 *
-	 * @return bool
-	 */
-	public function canBeConsumedBy(Entity $entity) : bool{
-		return $entity instanceof Human and $this->canBeConsumed();
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getFoodRestore() : int{
-		return 4;
-	}
-
-	/**
-	 * @return float
-	 */
-	public function getSaturationRestore() : float{
-		return 9.6;
-	}
-
-	/**
-	 * @return array
-	 */
 	public function getAdditionalEffects() : array{
 		return [
 			Effect::getEffect(Effect::REGENERATION)->setDuration(600)->setAmplifier(4),
-			Effect::getEffect(Effect::DAMAGE_RESISTANCE)->setDuration(6000)->setAmplifier(0),
-			Effect::getEffect(Effect::ABSORPTION)->setDuration(2400)->setAmplifier(3),
-			Effect::getEffect(Effect::FIRE_RESISTANCE)->setDuration(6000)->setAmplifier(0),
+            Effect::getEffect(Effect::ABSORPTION)->setDuration(2400)->setAmplifier(3),
+            Effect::getEffect(Effect::DAMAGE_RESISTANCE)->setDuration(6000),
+			Effect::getEffect(Effect::FIRE_RESISTANCE)->setDuration(6000),
 		];
 	}
 }

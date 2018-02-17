@@ -1,53 +1,60 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\nbt\tag;
 
 
-abstract class NamedTag extends Tag {
+abstract class NamedTag extends Tag{
+    /** @var string */
+    protected $__name;
 
-	protected $__name;
+    /**
+     * @param string $name
+     * @param mixed  $value
+     */
+    public function __construct(string $name = "", $value = null){
+        $this->__name = ($name === null or $name === false) ? "" : $name;
+        if($value !== null){
+            $this->setValue($value);
+        }
+    }
 
-	/**
-	 * @param string                                                                  $name
-	 * @param bool|float|double|int|ByteTag|ShortTag|array|CompoundTag|ListTag|string $value
-	 */
-	public function __construct($name = "", $value = null){
-		$this->__name = ($name === null or $name === false) ? "" : $name;
-		if($value !== null){
-			$this->value = $value;
-		}
-	}
+    /**
+     * @return string
+     */
+    public function getName() : string{
+        return $this->__name;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getName(){
-		return $this->__name;
-	}
-
-	/**
-	 * @param $name
-	 */
-	public function setName($name){
-		$this->__name = $name;
-	}
+    /**
+     * @param string $name
+     */
+    public function setName(string $name){
+        $this->__name = $name;
+    }
 }

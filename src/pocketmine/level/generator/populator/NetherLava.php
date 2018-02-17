@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -63,7 +86,7 @@ class NetherLava extends Populator {
 				$y = $this->getHighestWorkableBlock($x, $z);
 				if($y !== -1 and $this->canNetherLavaStay($x, $y, $z)){
 					$this->level->setBlockIdAt($x, $y, $z, Block::LAVA);
-					$this->level->updateBlockLight($x, $y, $z);
+					//$this->level->updateBlockLight($x, $y, $z);
 					$this->lavaSpread($x, $y, $z);
 				}
 			}
@@ -132,7 +155,7 @@ class NetherLava extends Populator {
 				}else{
 					$this->level->setBlockIdAt($x, $y, $z, Block::LAVA);
 					$this->level->setBlockDataAt($x, $y, $z, $decay);
-					$this->level->updateBlockLight($x, $y, $z);
+					//$this->level->updateBlockLight($x, $y, $z);
 					$this->lavaSpread($x, $y, $z);
 					return;
 				}
@@ -186,7 +209,7 @@ class NetherLava extends Populator {
 		if($this->level->getBlockIdAt($x, $y, $z) === Block::AIR){
 			$this->level->setBlockIdAt($x, $y, $z, Block::LAVA);
 			$this->level->setBlockDataAt($x, $y, $z, $newFlowDecay);
-			$this->level->updateBlockLight($x, $y, $z);
+			//$this->level->updateBlockLight($x, $y, $z);
 			$this->lavaSpread($x, $y, $z);
 		}
 	}

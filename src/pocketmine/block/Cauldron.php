@@ -1,23 +1,29 @@
 <?php
-
-/*
+/**
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
  *
  */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
@@ -25,151 +31,66 @@ use pocketmine\event\player\PlayerBucketEmptyEvent;
 use pocketmine\event\player\PlayerBucketFillEvent;
 use pocketmine\event\player\PlayerGlassBottleEvent;
 use pocketmine\item\Armor;
+use pocketmine\item\TieredTool;
 use pocketmine\item\Item;
 use pocketmine\item\Potion;
-use pocketmine\item\Tool;
 use pocketmine\level\sound\ExplodeSound;
 use pocketmine\level\sound\GraySplashSound;
 use pocketmine\level\sound\SpellSound;
 use pocketmine\level\sound\SplashSound;
-use pocketmine\nbt\tag\ByteTag;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\tile\Cauldron as TileCauldron;
 use pocketmine\tile\Tile;
 use pocketmine\utils\Color;
 
+// TODO : NEED UPDATE
 class Cauldron extends Solid {
 
 	protected $id = self::CAULDRON_BLOCK;
+	protected $itemId = Item::CAULDRON;
 
-	/**
-	 * Cauldron constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 2;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Cauldron";
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canBeActivated() : bool{
-		return true;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
-	}
+	public function getToolHarvestLevel(): int{
+        return TieredTool::TIER_WOODEN;
+    }
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		$nbt = new CompoundTag("", [
-			new StringTag("id", Tile::CAULDRON),
-			new IntTag("x", $block->x),
-			new IntTag("y", $block->y),
-			new IntTag("z", $block->z),
-			new ShortTag("PotionId", 0xffff),
-			new ByteTag("SplashPotion", 0),
-			new ListTag("Items", [])
-		]);
+    public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+        Tile::createTile(Tile::CAULDRON, $this->getLevel(), TileCauldron::createNBT($this, $face, $item, $player));
 
-		if($item->hasCustomBlockData()){
-			foreach($item->getCustomBlockData() as $key => $v){
-				$nbt->{$key} = $v;
-			}
-		}
-
-		Tile::createTile("Cauldron", $this->getLevel(), $nbt);
-
-		$this->getLevel()->setBlock($block, $this, true, true);
-		return true;
-	}
-
-	/**
-	 * @param Item $item
-	 *
-	 * @return bool
-	 */
-	public function onBreak(Item $item){
-		$this->getLevel()->setBlock($this, new Air(), true);
-		return true;
-	}
-
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		if($item->isPickaxe() >= 1){
-			return [
-				[Item::CAULDRON, 0, 1]
-			];
-		}
-		return [];
+		return $this->getLevel()->setBlock($blockReplace, $this, true, true);
 	}
 
 	public function update(){//umm... right update method...?
-		$this->getLevel()->setBlock($this, Block::get($this->id, $this->meta + 1), true);
+		$this->getLevel()->setBlock($this, BlockFactory::get($this->id, $this->meta + 1), true);
 		$this->getLevel()->setBlock($this, $this, true);//Undo the damage value
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isEmpty(){
 		return $this->meta === 0x00;
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isFull(){
 		return $this->meta === 0x06;
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Item $item, Player $player = null){//@author iTX. rewrite @Dog194
+	public function onActivate(Item $item, Player $player = null) : bool{
 		$tile = $this->getLevel()->getTile($this);
 		if(!($tile instanceof TileCauldron)){
 			return false;
@@ -205,7 +126,7 @@ class Cauldron extends Solid {
 						}
 						if($tile->hasPotion()){//if has potion
 							$this->meta = 0;//empty
-							$tile->setPotionId(0xffff);//reset potion
+							$tile->setPotionId(-1);//reset potion
 							$tile->setSplashPotion(false);
 							$tile->clearCustomColor();
 							$this->getLevel()->setBlock($this, $this, true);
@@ -228,9 +149,6 @@ class Cauldron extends Solid {
 				}
 				if($player->isSurvival()){
 					$item->setCount($item->getCount() - 1);
-					/*if($item->getCount() <= 0){
-						$player->getInventory()->setItemInHand(Item::get(Item::AIR));
-					}*/
 				}
 				$tile->setCustomColor($color);
 				$this->getLevel()->addSound(new SplashSound($this->add(0.5, 1, 0.5)));
@@ -271,7 +189,7 @@ class Cauldron extends Solid {
 				){//long...
 					$this->meta = 0x00;
 					$this->getLevel()->setBlock($this, $this, true);
-					$tile->setPotionId(0xffff);//reset
+					$tile->setPotionId(-1);//reset
 					$tile->setSplashPotion(false);
 					$tile->clearCustomColor();
 					if($player->isSurvival()){
@@ -285,7 +203,7 @@ class Cauldron extends Solid {
 					if($player->isSurvival()){
 						$player->getInventory()->setItemInHand(Item::get(Item::GLASS_BOTTLE));
 					}
-					$tile->setPotionId(0xffff);
+					$tile->setPotionId(-1);
 					$tile->setSplashPotion(false);
 					$tile->clearCustomColor();
 					$this->getLevel()->addSound(new SplashSound($this->add(0.5, 1, 0.5)));
@@ -299,7 +217,7 @@ class Cauldron extends Solid {
 					if($player->isSurvival()){
 						$player->getInventory()->setItemInHand(Item::get(Item::GLASS_BOTTLE));
 					}
-					$color = Potion::getColor($item->getDamage());
+					$color = Potion::getColor($item->getDamage())->toArray();
 					$this->getLevel()->addSound(new SpellSound($this->add(0.5, 1, 0.5), $color[0], $color[1], $color[2]));
 				}
 				break;
@@ -319,13 +237,13 @@ class Cauldron extends Solid {
 						$result = Item::get(Item::POTION, $tile->getPotionId());
 					}
 					if($this->isEmpty()){
-						$tile->setPotionId(0xffff);//reset
+						$tile->setPotionId(-1);//reset
 						$tile->setSplashPotion(false);
 						$tile->clearCustomColor();
 					}
 					$this->getLevel()->setBlock($this, $this, true);
 					$this->addItem($item, $player, $result);
-					$color = Potion::getColor($result->getDamage());
+					$color = Potion::getColor($result->getDamage())->toArray();
 					$this->getLevel()->addSound(new SpellSound($this->add(0.5, 1, 0.5), $color[0], $color[1], $color[2]));
 				}else{
 					$this->meta -= 2;
@@ -341,11 +259,6 @@ class Cauldron extends Solid {
 		return true;
 	}
 
-	/**
-	 * @param Item   $item
-	 * @param Player $player
-	 * @param Item   $result
-	 */
 	public function addItem(Item $item, Player $player, Item $result){
 		if($item->getCount() <= 1){
 			$player->getInventory()->setItemInHand($result);
@@ -360,4 +273,8 @@ class Cauldron extends Solid {
 			}
 		}
 	}
+
+	public function getMaxStackSize() : int{
+        return 1;
+    }
 }

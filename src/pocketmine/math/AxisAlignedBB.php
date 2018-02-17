@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -20,8 +43,6 @@
 */
 
 namespace pocketmine\math;
-
-use pocketmine\level\MovingObjectPosition;
 
 class AxisAlignedBB {
 
@@ -228,8 +249,7 @@ class AxisAlignedBB {
 			if($x1 < $x){
 				$x = $x1;
 			}
-		}
-		if($x < 0 and $bb->minX >= $this->maxX){
+		}elseif($x < 0 and $bb->minX >= $this->maxX){
 			$x2 = $this->maxX - $bb->minX;
 			if($x2 > $x){
 				$x = $x2;
@@ -257,8 +277,7 @@ class AxisAlignedBB {
 			if($y1 < $y){
 				$y = $y1;
 			}
-		}
-		if($y < 0 and $bb->minY >= $this->maxY){
+		}elseif($y < 0 and $bb->minY >= $this->maxY){
 			$y2 = $this->maxY - $bb->minY;
 			if($y2 > $y){
 				$y = $y2;
@@ -286,8 +305,7 @@ class AxisAlignedBB {
 			if($z1 < $z){
 				$z = $z1;
 			}
-		}
-		if($z < 0 and $bb->minZ >= $this->maxZ){
+		}elseif($z < 0 and $bb->minZ >= $this->maxZ){
 			$z2 = $this->maxZ - $bb->minZ;
 			if($z2 > $z){
 				$z = $z2;
@@ -366,8 +384,8 @@ class AxisAlignedBB {
 	 * @param Vector3 $pos1
 	 * @param Vector3 $pos2
 	 *
-	 * @return MovingObjectPosition
-	 */
+	 * @return RayTraceResult|null
+     */
 	public function calculateIntercept(Vector3 $pos1, Vector3 $pos2){
 		$v1 = $pos1->getIntermediateWithXValue($pos2, $this->minX);
 		$v2 = $pos1->getIntermediateWithXValue($pos2, $this->maxX);
@@ -447,7 +465,7 @@ class AxisAlignedBB {
 			$f = 3;
 		}
 
-		return MovingObjectPosition::fromBlock(0, 0, 0, $f, $vector);
+		return new RayTraceResult($this, $f, $vector);
 	}
 
 	/**

@@ -1,33 +1,34 @@
 <?php
-
-/*
+/**
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
  *
  */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
-use pocketmine\nbt\NBT;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\tile\Dispenser as TileDispenser;
 use pocketmine\tile\Tile;
@@ -36,56 +37,23 @@ class Dispenser extends Solid {
 
 	protected $id = self::DISPENSER;
 
-	/**
-	 * Dispenser constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canBeActivated() : bool{
-		return true;
-	}
-
-	/**
-	 * @return float
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 3.5;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Dispenser";
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
 		$dispenser = null;
 		if($player instanceof Player){
 			$pitch = $player->getPitch();
@@ -104,34 +72,12 @@ class Dispenser extends Solid {
 		];
 		$this->meta = $faces[$f];
 
-		$this->getLevel()->setBlock($block, $this, true, true);
-		$nbt = new CompoundTag("", [
-			new ListTag("Items", []),
-			new StringTag("id", Tile::DISPENSER),
-			new IntTag("x", $this->x),
-			new IntTag("y", $this->y),
-			new IntTag("z", $this->z)
-		]);
-		$nbt->Items->setTagType(NBT::TAG_Compound);
+		$bool = $this->getLevel()->setBlock($blockReplace, $this, true, true);
+		Tile::createTile(Tile::DISPENSER, $this->getLevel(), TileDispenser::createNBT($this, $face, $item, $player));
 
-		if($item->hasCustomName()){
-			$nbt->CustomName = new StringTag("CustomName", $item->getCustomName());
-		}
-
-		if($item->hasCustomBlockData()){
-			foreach($item->getCustomBlockData() as $key => $v){
-				$nbt->{$key} = $v;
-			}
-		}
-
-		Tile::createTile(Tile::DISPENSER, $this->getLevel(), $nbt);
-
-		return true;
+		return $bool;
 	}
 
-	/**
-	 *
-	 */
 	public function activate(){
 		$tile = $this->getLevel()->getTile($this);
 		if($tile instanceof TileDispenser){
@@ -139,48 +85,19 @@ class Dispenser extends Solid {
 		}
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Item $item, Player $player = null){
+	public function onActivate(Item $item, Player $player = null) : bool{
 		if($player instanceof Player){
 			$t = $this->getLevel()->getTile($this);
 			$dispenser = null;
 			if($t instanceof TileDispenser){
 				$dispenser = $t;
 			}else{
-				$nbt = new CompoundTag("", [
-					new ListTag("Items", []),
-					new StringTag("id", Tile::DISPENSER),
-					new IntTag("x", $this->x),
-					new IntTag("y", $this->y),
-					new IntTag("z", $this->z)
-				]);
-				$nbt->Items->setTagType(NBT::TAG_Compound);
-				$dispenser = Tile::createTile(Tile::DISPENSER, $this->getLevel(), $nbt);
-			}
-
-			if($player->isCreative() and $player->getServer()->limitedCreative){
-				return true;
+				$dispenser = Tile::createTile(Tile::DISPENSER, $this->getLevel(), TileDispenser::createNBT($this));
 			}
 
 			$player->addWindow($dispenser->getInventory());
 		}
 
 		return true;
-	}
-
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		return [
-			[$this->id, 0, 1],
-		];
 	}
 }

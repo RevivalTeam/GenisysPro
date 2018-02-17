@@ -1,23 +1,30 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
@@ -30,28 +37,15 @@ class MelonStem extends Crops {
 
 	protected $id = self::MELON_STEM;
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Melon Stem";
 	}
 
-	/**
-	 * MelonStem constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @param int $type
-	 *
-	 * @return bool|int
-	 */
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			if($this->getSide(0)->isTransparent() === true){
 				$this->getLevel()->useBreakOn($this);
@@ -92,14 +86,17 @@ class MelonStem extends Crops {
 		return false;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
+	public function getDropsForCompatibleTool(Item $item) : array{
 		return [
-			[Item::MELON_SEEDS, 0, mt_rand(0, 2)],
+			Item::get(Item::MELON_SEEDS, 0, mt_rand(0, 2))
 		];
 	}
+
+    public function getPickedItem(): Item{
+        return Item::get(Item::MELON_SEEDS);
+    }
+
+    public function ticksRandomly(): bool{
+        return true;
+    }
 }

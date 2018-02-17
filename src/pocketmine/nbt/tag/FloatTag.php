@@ -1,56 +1,73 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\nbt\tag;
 
 use pocketmine\nbt\NBT;
+use pocketmine\nbt\NBTStream;
 
 #include <rules/NBT.h>
 
-class FloatTag extends NamedTag {
+class FloatTag extends NamedTag{
 
-	/**
-	 * @return int
-	 */
-	public function getType(){
-		return NBT::TAG_Float;
-	}
+    /**
+     * FloatTag constructor.
+     *
+     * @param string $name
+     * @param float  $value
+     */
+    public function __construct(string $name = "", float $value = 0.0){
+        parent::__construct($name, $value);
+    }
 
-	/**
-	 * @param NBT  $nbt
-	 * @param bool $network
-	 *
-	 * @return mixed|void
-	 */
-	public function read(NBT $nbt, bool $network = false){
-		$this->value = $nbt->getFloat();
-	}
+    public function getType() : int{
+        return NBT::TAG_Float;
+    }
 
-	/**
-	 * @param NBT  $nbt
-	 * @param bool $network
-	 *
-	 * @return mixed|void
-	 */
-	public function write(NBT $nbt, bool $network = false){
-		$nbt->putFloat($this->value);
-	}
+    public function read(NBTStream $nbt){
+        $this->value = $nbt->getFloat();
+    }
+
+    public function write(NBTStream $nbt){
+        $nbt->putFloat($this->value);
+    }
+
+    /**
+     * @return float
+     */
+    public function &getValue() : float{
+        return parent::getValue();
+    }
+
+    public function setValue($value){
+        if(!is_float($value) and !is_int($value)){
+            throw new \TypeError("FloatTag value must be of type float, " . gettype($value) . " given");
+        }
+        parent::setValue((float) $value);
+    }
 }

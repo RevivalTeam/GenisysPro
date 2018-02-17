@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -174,7 +197,7 @@ class Normal2 extends Normal {
 	}
 
 
-	public function generateChunk($chunkX, $chunkZ){
+	public function generateChunk(int $chunkX, int $chunkZ){
 		$this->random->setSeed(0xdeadbeef ^ ($chunkX << 8) ^ $chunkZ ^ $this->level->getSeed());
 
 		$seaFloorNoise = Generator::getFastNoise2D($this->noiseSeaFloor, 16, 16, 4, $chunkX * 16, 0, $chunkZ * 16);
@@ -292,7 +315,7 @@ class Normal2 extends Normal {
 	}
 
 
-	public function populateChunk($chunkX, $chunkZ){
+	public function populateChunk(int $chunkX, int $chunkZ){
 		$this->random->setSeed(0xdeadbeef ^ ($chunkX << 8) ^ $chunkZ ^ $this->level->getSeed());
 		foreach($this->populators as $populator){
 			$populator->populate($this->level, $chunkX, $chunkZ, $this->random);
@@ -303,7 +326,7 @@ class Normal2 extends Normal {
 		$biome->populateChunk($this->level, $chunkX, $chunkZ, $this->random);
 	}
 
-	public function getSpawn(){
+	public function getSpawn() : Vector3{
 		return new Vector3(127.5, 128, 127.5);
 	}
 }

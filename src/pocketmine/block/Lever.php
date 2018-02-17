@@ -1,23 +1,30 @@
 <?php
 
-/*
+/**
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
  *
  */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
@@ -27,213 +34,70 @@ use pocketmine\level\sound\ButtonClickSound;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
-class Lever extends RedstoneSource {
+class Lever extends Flowable {
 	protected $id = self::LEVER;
 
-	/**
-	 * Lever constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canBeActivated() : bool{
-		return true;
-	}
-
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Lever";
 	}
 
-	/**
-	 * @param int $type
-	 *
-	 * @return bool|int
-	 */
-	public function onUpdate($type){
+	public function getHardness(): float{
+        return 0.5;
+    }
+
+    public function getVariantBitmask(): int{
+        return 0;
+    }
+
+    public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
-			$side = $this->getDamage();
-			if($this->isActivated()) $side ^= 0x08;
 			$faces = [
-				5 => 0,
-				6 => 0,
-				3 => 2,
-				1 => 4,
-				4 => 3,
-				2 => 5,
-				0 => 1,
-				7 => 1,
+                0 => Vector3::SIDE_UP,
+                1 => Vector3::SIDE_WEST,
+                2 => Vector3::SIDE_EAST,
+                3 => Vector3::SIDE_NORTH,
+                4 => Vector3::SIDE_SOUTH,
+                5 => Vector3::SIDE_DOWN,
+                6 => Vector3::SIDE_DOWN,
+                7 => Vector3::SIDE_UP
 			];
 
-			$block = $this->getSide($faces[$side]);
-			if($block->isTransparent()){
-				$this->getLevel()->useBreakOn($this);
+            if(!$this->getSide($faces[$this->meta & 0x07])->isSolid()){
+                $this->level->useBreakOn($this);
 
-				return Level::BLOCK_UPDATE_NORMAL;
+                return $type;
 			}
 		}
 		return false;
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		if($target->isTransparent() === false){
-			$faces = [
-				3 => 3,
-				2 => 4,
-				4 => 2,
-				5 => 1,
-			];
-			if($face === 0){
-				$to = $player instanceof Player ? $player->getDirection() : 0;
-				$this->meta = ($to % 2 != 1 ? 0 : 7);
-			}elseif($face === 1){
-				$to = $player instanceof Player ? $player->getDirection() : 0;
-				$this->meta = ($to % 2 != 1 ? 6 : 5);
-			}else{
-				$this->meta = $faces[$face];
-			}
-			$this->getLevel()->setBlock($block, $this, true, false);
-			return true;
-		}
-		return false;
-	}
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+        if(!$blockClicked->isSolid()){
+            return false;
+        }
 
-	/**
-	 * @param array $ignore
-	 *
-	 * @return bool|void
-	 */
-	public function activate(array $ignore = []){
-		parent::activate($ignore);
-		$side = $this->meta;
-		if($this->isActivated()) $side ^= 0x08;
-		$faces = [
-			5 => 0,
-			6 => 0,
-			3 => 2,
-			1 => 4,
-			4 => 3,
-			2 => 5,
-			0 => 1,
-			7 => 1,
-		];
+        if($face === Vector3::SIDE_DOWN){
+            $this->meta = 0;
+        }else{
+            $this->meta = 6 - $face;
+        }
 
-		$block = $this->getSide($faces[$side])->getSide(Vector3::SIDE_UP);
-		if(!$this->equals($block)){
-			$this->activateBlock($block);
-		}
+        if($player !== null){
+            if(($player->getDirection() & 0x01) === 0){
+                if($face === Vector3::SIDE_UP){
+                    $this->meta = 6;
+                }
+            } else {
+                if($face === Vector3::SIDE_DOWN){
+                    $this->meta = 7;
+                }
+            }
+        }
 
-		$this->checkTorchOn($this->getSide($faces[$side]), [static::getOppositeSide($faces[$side])]);
-	}
-
-	/**
-	 * @param array $ignore
-	 *
-	 * @return bool|void
-	 */
-	public function deactivate(array $ignore = []){
-		parent::deactivate($ignore);
-		$side = $this->meta;
-		if($this->isActivated()) $side ^= 0x08;
-		$faces = [
-			5 => 0,
-			6 => 0,
-			3 => 2,
-			1 => 4,
-			4 => 3,
-			2 => 5,
-			0 => 1,
-			7 => 1,
-		];
-
-		$block = $this->getSide($faces[$side])->getSide(Vector3::SIDE_UP);
-		if(!$this->equals($block)){
-			$this->deactivateBlock($block);
-		}
-
-		$this->checkTorchOff($this->getSide($faces[$side]), [static::getOppositeSide($faces[$side])]);
-	}
-
-	/**
-	 * @param Item        $item
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Item $item, Player $player = null){
-		$this->meta ^= 0x08;
-		$this->getLevel()->setBlock($this, $this, true, false);
-		$this->getLevel()->addSound(new ButtonClickSound($this));
-		if($this->isActivated()) $this->activate();
-		else $this->deactivate();
-		return true;
-	}
-
-	/**
-	 * @param Item $item
-	 *
-	 * @return mixed|void
-	 */
-	public function onBreak(Item $item){
-		if($this->isActivated()){
-			$this->meta ^= 0x08;
-			$this->getLevel()->setBlock($this, $this, true, false);
-			$this->deactivate();
-		}
-		$this->getLevel()->setBlock($this, new Air(), true, false);
-	}
-
-	/**
-	 * @param Block|null $from
-	 *
-	 * @return bool
-	 */
-	public function isActivated(Block $from = null){
-		return (($this->meta & 0x08) === 0x08);
-	}
-
-	/**
-	 * @return float
-	 */
-	public function getHardness(){
-		return 0.5;
-	}
-
-	/**
-	 * @return float
-	 */
-	public function getResistance(){
-		return 2.5;
-	}
-
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		return [
-			[$this->id, 0, 1],
-		];
-	}
+        return $this->level->setBlock($blockReplace, $this, true, true);
+    }
 }

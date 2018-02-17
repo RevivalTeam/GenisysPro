@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -22,6 +45,7 @@
 namespace pocketmine\level\generator\populator;
 
 use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 use pocketmine\level\ChunkManager;
 use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\Level;
@@ -55,7 +79,7 @@ class GroundCover extends Populator {
 
 					$column = $chunk->getBlockIdColumn($x, $z);
 					for($y = 127; $y > 0; --$y){
-						if($column{$y} !== "\x00" and !Block::get(ord($column{$y}))->isTransparent()){
+						if($column{$y} !== "\x00" and !BlockFactory::get(ord($column{$y}))->isTransparent()){
 							break;
 						}
 					}
@@ -67,7 +91,7 @@ class GroundCover extends Populator {
 							break;
 						}
 						if($y <= $waterHeight and $b->getId() == Block::GRASS and $chunk->getBlockId($x, $y + 1, $z) == Block::STILL_WATER){
-							$b = Block::get(Block::DIRT);
+							$b = BlockFactory::get(Block::DIRT);
 						}
 						if($b->getDamage() === 0){
 							$chunk->setBlockId($x, $y, $z, $b->getId());

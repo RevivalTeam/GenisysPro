@@ -1,28 +1,32 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
-
-
-use pocketmine\item\Tool;
 
 class Planks extends Solid {
 	const OAK = 0;
@@ -34,46 +38,26 @@ class Planks extends Solid {
 
 	protected $id = self::WOODEN_PLANKS;
 
-	/**
-	 * Planks constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 2;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_AXE;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_AXE;
 	}
 
-	/**
-	 * @return int
-	 */
 	public function getBurnChance() : int{
 		return 5;
 	}
 
-	/**
-	 * @return int
-	 */
 	public function getBurnAbility() : int{
 		return 20;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		static $names = [
 			self::OAK => "Oak Wood Planks",
@@ -81,11 +65,13 @@ class Planks extends Solid {
 			self::BIRCH => "Birch Wood Planks",
 			self::JUNGLE => "Jungle Wood Planks",
 			self::ACACIA => "Acacia Wood Planks",
-			self::DARK_OAK => "Dark Oak Wood Planks",
-			6 => "Unknown Planks",
-			7 => "Unknown Planks"
+			self::DARK_OAK => "Dark Oak Wood Planks"
 		];
-		return $names[$this->meta & 0x07];
+		return $names[$this->getVariant()] ?? "Unknown";
 	}
+
+	public function getFuelTime(): int{
+        return 300;
+    }
 
 }

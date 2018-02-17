@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -22,8 +45,8 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author GenisysPro
- * @link https://github.com/GenisysPro/GenisysPro
+ * @author Turanic
+ * @link https://github.com/Turanic/Turanic
  *
  *
 */
@@ -41,6 +64,7 @@ use pocketmine\event\Timings;
 use pocketmine\event\TimingsHandler;
 use pocketmine\permission\Permissible;
 use pocketmine\permission\Permission;
+use pocketmine\command\overload\{CommandOverload, CommandEnum, CommandParameter};
 use pocketmine\Server;
 
 /**
@@ -232,7 +256,7 @@ class PluginManager {
 										continue;
 									}
 
-									$pluginNumbers = array_map("intval", explode(".", $pluginApi[0]));
+									$pluginNumbers = array_map("intval", array_pad(explode(".", $pluginApi[0]), 3, "0"));
 									$serverNumbers = array_map("intval", explode(".", $serverApi[0]));
 
 									if($pluginNumbers[0] !== $serverNumbers[0]){ //Completely different API version
@@ -248,18 +272,18 @@ class PluginManager {
 								break;
 							}
 
-							$compatiblegeniapi = false;
+							$compatibleturanicapi = false;
 							foreach($description->getCompatibleGeniApis() as $version){
 								//Format: majorVersion.minorVersion.patch
 								$version = array_map("intval", explode(".", $version));
-								$apiVersion = array_map("intval", explode(".", $this->server->getGeniApiVersion()));
+								$apiVersion = array_map("intval", explode(".", $this->server->getTuranicApiVersion()));
 								//Completely different API version
 								if($version[0] > $apiVersion[0]){
 									continue;
 								}
 								//If the plugin uses new API
 								if($version[0] < $apiVersion[0]){
-									$compatiblegeniapi = true;
+									$compatibleturanicapi = true;
 									break;
 								}
 								//If the plugin requires new API features, being backwards compatible
@@ -271,28 +295,28 @@ class PluginManager {
 									continue;
 								}
 
-								$compatiblegeniapi = true;
+								$compatibleturanicapi = true;
 								break;
 							}
 
 							if($compatible === false){
 								if($this->server->loadIncompatibleAPI === true){
-									$this->server->getLogger()->debug("插件{$name}的API与服务器不符,但GenisysPro仍然加载了它");
+									$this->server->getLogger()->debug("{$name} uses an older API, but Turanic will load it.");
 								}else{
 									$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.incompatibleAPI"]));
 									continue;
 								}
 							}
 
-							if($compatiblegeniapi === false){
-								$this->server->getLogger()->error("Could not load plugin '{$description->getName()}': Incompatible GeniAPI version");
+							if($compatibleturanicapi === false){
+								$this->server->getLogger()->error("Could not load plugin '{$description->getName()}': Incompatible TuranicAPI version");
 								continue;
 							}
 
 							$plugins[$name] = $file;
 
-							$softDependencies[$name] = (array) $description->getSoftDepend();
-							$dependencies[$name] = (array) $description->getDepend();
+							$softDependencies[$name] = $description->getSoftDepend();
+							$dependencies[$name] = $description->getDepend();
 
 							foreach($description->getLoadBefore() as $before){
 								if(isset($softDependencies[$before])){
@@ -624,50 +648,77 @@ class PluginManager {
 	 * @return PluginCommand[]
 	 */
 	protected function parseYamlCommands(Plugin $plugin){
-		$pluginCmds = [];
+        $pluginCmds = [];
 
-		foreach($plugin->getDescription()->getCommands() as $key => $data){
-			if(strpos($key, ":") !== false){
-				$this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.plugin.commandError", [$key, $plugin->getDescription()->getFullName()]));
-				continue;
-			}
-			if(is_array($data)){
-				$newCmd = new PluginCommand($key, $plugin);
-				if(isset($data["description"])){
-					$newCmd->setDescription($data["description"]);
-				}
+        foreach ($plugin->getDescription()->getCommands() as $key => $data) {
+            if (strpos($key, ":") !== false) {
+                $this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.plugin.commandError", [$key, $plugin->getDescription()->getFullName()]));
+                continue;
+            }
+            if (is_array($data)) {
+                $newCmd = new PluginCommand($key, $plugin);
+                if (isset($data["description"])) {
+                    $newCmd->setDescription($data["description"]);
+                }
 
-				if(isset($data["usage"])){
-					$newCmd->setUsage($data["usage"]);
-				}
+                if (isset($data["usage"])) {
+                    $newCmd->setUsage($data["usage"]);
+                }
 
-				if(isset($data["aliases"]) and is_array($data["aliases"])){
-					$aliasList = [];
-					foreach($data["aliases"] as $alias){
-						if(strpos($alias, ":") !== false){
-							$this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.plugin.aliasError", [$alias, $plugin->getDescription()->getFullName()]));
-							continue;
-						}
-						$aliasList[] = $alias;
-					}
+                if (isset($data["overloads"]) and is_array($data["overloads"])) {
+                    foreach ($data["overloads"] as $name => $d) {
+                        $params = [];
+                        if (isset($d["parameters"])) {
+                            if (is_array($d["parameters"])) {
+                                foreach ($d["parameters"] as $pn => $pd) {
+                                    if (is_array($pd)) {
+                                        $enum = null;
+                                        if (isset($pd["enum"]) and is_array($pd["enum"]) and isset($pd["enum-name"])) {
 
-					$newCmd->setAliases($aliasList);
-				}
+                                            $enum = new CommandEnum($pd["enum-name"], array_values($pd["enum"]));
+                                        }
+                                        $param = new CommandParameter($pn, CommandParameter::getTypeFromString($pd["type"] ?? "rawtext"), (bool)$pd["optional"] ?? false, CommandParameter::getFlagFromString($pd["flag"] ?? "valid"), $enum, $pd["postfix"] ?? "");
+                                    }
+                                    $params[] = $param;
+                                }
+                            }
+                        }
+                        $overload = new CommandOverload($name, $params);
+                        $newCmd->addOverload($overload);
+                    }
+                }
 
-				if(isset($data["permission"])){
-					$newCmd->setPermission($data["permission"]);
-				}
+                if (isset($data["permissionLevel"])) {
+                    $newCmd->setPermissionLevel((int)$data["permissionLevel"]);
+                }
 
-				if(isset($data["permission-message"])){
-					$newCmd->setPermissionMessage($data["permission-message"]);
-				}
+                if (isset($data["aliases"]) and is_array($data["aliases"])) {
+                    $aliasList = [];
+                    foreach ($data["aliases"] as $alias) {
+                        if (strpos($alias, ":") !== false) {
+                            $this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.plugin.aliasError", [$alias, $plugin->getDescription()->getFullName()]));
+                            continue;
+                        }
+                        $aliasList[] = $alias;
+                    }
 
-				$pluginCmds[] = $newCmd;
-			}
-		}
+                    $newCmd->setAliases($aliasList);
+                }
 
-		return $pluginCmds;
-	}
+                if (isset($data["permission"])) {
+                    $newCmd->setPermission($data["permission"]);
+                }
+
+                if (isset($data["permission-message"])) {
+                    $newCmd->setPermissionMessage($data["permission-message"]);
+                }
+
+                $pluginCmds[] = $newCmd;
+            }
+        }
+
+        return $pluginCmds;
+    }
 
 	public function disablePlugins(){
 		foreach($this->getPlugins() as $plugin){
@@ -729,15 +780,12 @@ class PluginManager {
 		}
 	}
 
-	/**
-	 * Registers all the events in the given Listener class
-	 *
-	 * @param Listener $listener
-	 * @param Plugin   $plugin
-	 *
-	 * @throws PluginException
-	 */
-	public function registerEvents(Listener $listener, Plugin $plugin){
+    /**
+     * @param Listener $listener
+     * @param Plugin $plugin
+     * @throws \Throwable
+     */
+    public function registerEvents(Listener $listener, Plugin $plugin){
 		if(!$plugin->isEnabled()){
 			throw new PluginException("Plugin attempted to register " . get_class($listener) . " while not enabled");
 		}
@@ -779,17 +827,16 @@ class PluginManager {
 		}
 	}
 
-	/**
-	 * @param string        $event Class name that extends Event
-	 * @param Listener      $listener
-	 * @param int           $priority
-	 * @param EventExecutor $executor
-	 * @param Plugin        $plugin
-	 * @param bool          $ignoreCancelled
-	 *
-	 * @throws PluginException
-	 */
-	public function registerEvent($event, Listener $listener, $priority, EventExecutor $executor, Plugin $plugin, $ignoreCancelled = false){
+    /**
+     * @param $event
+     * @param Listener $listener
+     * @param $priority
+     * @param EventExecutor $executor
+     * @param Plugin $plugin
+     * @param bool $ignoreCancelled
+     * @throws \Throwable
+     */
+    public function registerEvent($event, Listener $listener, $priority, EventExecutor $executor, Plugin $plugin, $ignoreCancelled = false){
 		if(!is_subclass_of($event, Event::class)){
 			throw new PluginException($event . " is not an Event");
 		}

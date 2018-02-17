@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -22,19 +45,17 @@
 namespace pocketmine\level\generator\normal\biome;
 
 use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 
 abstract class GrassyBiome extends NormalBiome {
 
-	/**
-	 * GrassyBiome constructor.
-	 */
 	public function __construct(){
 		$this->setGroundCover([
-			Block::get(Block::GRASS, 0),
-			Block::get(Block::DIRT, 0),
-			Block::get(Block::DIRT, 0),
-			Block::get(Block::DIRT, 0),
-			Block::get(Block::DIRT, 0),
+            BlockFactory::get(Block::GRASS, 0),
+            BlockFactory::get(Block::DIRT, 0),
+            BlockFactory::get(Block::DIRT, 0),
+            BlockFactory::get(Block::DIRT, 0),
+            BlockFactory::get(Block::DIRT, 0),
 		]);
 	}
 }

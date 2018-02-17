@@ -1,86 +1,89 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
+use pocketmine\level\Level;
+use pocketmine\Player;
 
-class Ice extends Transparent {
+class Ice extends Transparent{
 
 	protected $id = self::ICE;
 
-	/**
-	 * Ice constructor.
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Ice";
 	}
 
-	/**
-	 * @return float
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.5;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
+    public function getLightFilter() : int{
+        return 2;
+    }
+
+    public function getFrictionFactor() : float{
+        return 0.98;
+    }
+
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return bool
-	 */
-	public function onBreak(Item $item){
-		if($item->getEnchantmentLevel(Enchantment::TYPE_MINING_SILK_TOUCH) === 0){
-			$this->getLevel()->setBlock($this, new Water(), true);
+	public function onBreak(Item $item, Player $player = null) : bool{
+		if(!$item->hasEnchantment(Enchantment::SILK_TOUCH)){
+			$this->getLevel()->setBlock($this, BlockFactory::get(Block::WATER), true);
 		}
-		return true;
+		return parent::onBreak($item, $player);
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		if($item->getEnchantmentLevel(Enchantment::TYPE_MINING_SILK_TOUCH) > 0){
-			return [
-				[Item::ICE, 0, 1],
-			];
-		}else{
-			return [];
-		}
+    public function ticksRandomly() : bool{
+        return true;
+    }
+
+    public function onUpdate(int $type){
+        if($type === Level::BLOCK_UPDATE_RANDOM){
+            if($this->level->getHighestAdjacentBlockLight($this->x, $this->y, $this->z) >= 12){
+                $this->level->useBreakOn($this);
+
+                return $type;
+            }
+        }
+        return false;
+    }
+
+	public function getDropsForCompatibleTool(Item $item) : array{
+		return [];
 	}
 }

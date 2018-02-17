@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -14,23 +37,26 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\player;
 
 use pocketmine\event\Cancellable;
+use pocketmine\event\TextContainer;
 use pocketmine\Player;
 
 /**
  * Called when a player leaves the server
  */
-class PlayerKickEvent extends PlayerEvent implements Cancellable {
+class PlayerKickEvent extends PlayerEvent implements Cancellable{
 	public static $handlerList = null;
 
-	/** @var string */
+	/** @var TextContainer|string */
 	protected $quitMessage;
 
 	/** @var string */
@@ -39,32 +65,29 @@ class PlayerKickEvent extends PlayerEvent implements Cancellable {
 	/**
 	 * PlayerKickEvent constructor.
 	 *
-	 * @param Player $player
-	 * @param        $reason
-	 * @param        $quitMessage
+	 * @param Player               $player
+	 * @param string               $reason
+	 * @param TextContainer|string $quitMessage
 	 */
-	public function __construct(Player $player, $reason, $quitMessage){
+	public function __construct(Player $player, string $reason, $quitMessage){
 		$this->player = $player;
 		$this->quitMessage = $quitMessage;
 		$this->reason = $reason;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getReason(){
+	public function getReason() : string{
 		return $this->reason;
 	}
 
 	/**
-	 * @param $quitMessage
+	 * @param TextContainer|string $quitMessage
 	 */
 	public function setQuitMessage($quitMessage){
 		$this->quitMessage = $quitMessage;
 	}
 
 	/**
-	 * @return string
+	 * @return TextContainer|string
 	 */
 	public function getQuitMessage(){
 		return $this->quitMessage;

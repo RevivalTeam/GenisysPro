@@ -1,31 +1,40 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\item\TieredTool;
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
+// TODO : UPDATE!?!?!?
 class Slab extends Transparent {
 
 	const STONE = 0;
@@ -39,25 +48,14 @@ class Slab extends Transparent {
 
 	protected $id = self::SLAB;
 
-	/**
-	 * Slab constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 2;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		static $names = [
 			0 => "Stone",
@@ -66,10 +64,9 @@ class Slab extends Transparent {
 			3 => "Cobblestone",
 			4 => "Brick",
 			5 => "Stone Brick",
-			6 => "Quartz",
-			7 => "",
+			6 => "Quartz"
 		];
-		return (($this->meta & 0x08) > 0 ? "Upper " : "") . $names[$this->meta & 0x07] . " Slab";
+		return (($this->meta & 0x08) > 0 ? "Upper " : "") . ($names[$this->getVariant()] ?? "") . " Slab";
 	}
 
 	/**
@@ -120,87 +117,79 @@ class Slab extends Transparent {
 		}
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
 		$this->meta &= 0x07;
 		if($face === 0){
-			if($target->getId() === self::SLAB and ($target->getDamage() & 0x08) === 0x08 and ($target->getDamage() & 0x07) === ($this->meta & 0x07)){
-				$this->getLevel()->setBlock($target, Block::get(Item::DOUBLE_SLAB, $this->meta), true);
+			if($blockClicked->getId() === self::SLAB and ($blockClicked->getDamage() & 0x08) === 0x08 and ($blockClicked->getDamage() & 0x07) === ($this->meta & 0x07)){
+				$this->getLevel()->setBlock($blockClicked, BlockFactory::get(Item::DOUBLE_SLAB, $this->meta), true);
 
 				return true;
-			}elseif($block->getId() === self::SLAB and ($block->getDamage() & 0x07) === ($this->meta & 0x07)){
-				$this->getLevel()->setBlock($block, Block::get(Item::DOUBLE_SLAB, $this->meta), true);
+			}elseif($blockReplace->getId() === self::SLAB and ($blockReplace->getDamage() & 0x07) === ($this->meta & 0x07)){
+				$this->getLevel()->setBlock($blockReplace, BlockFactory::get(Item::DOUBLE_SLAB, $this->meta), true);
 
 				return true;
 			}else{
 				$this->meta |= 0x08;
 			}
 		}elseif($face === 1){
-			if($target->getId() === self::SLAB and ($target->getDamage() & 0x08) === 0 and ($target->getDamage() & 0x07) === ($this->meta & 0x07)){
-				$this->getLevel()->setBlock($target, Block::get(Item::DOUBLE_SLAB, $this->meta), true);
+			if($blockClicked->getId() === self::SLAB and ($blockClicked->getDamage() & 0x08) === 0 and ($blockClicked->getDamage() & 0x07) === ($this->meta & 0x07)){
+				$this->getLevel()->setBlock($blockClicked, BlockFactory::get(Item::DOUBLE_SLAB, $this->meta), true);
 
 				return true;
-			}elseif($block->getId() === self::SLAB and ($block->getDamage() & 0x07) === ($this->meta & 0x07)){
-				$this->getLevel()->setBlock($block, Block::get(Item::DOUBLE_SLAB, $this->meta), true);
+			}elseif($blockReplace->getId() === self::SLAB and ($blockReplace->getDamage() & 0x07) === ($this->meta & 0x07)){
+				$this->getLevel()->setBlock($blockReplace, BlockFactory::get(Item::DOUBLE_SLAB, $this->meta), true);
 
 				return true;
 			}
 			//TODO: check for collision
 		}else{
-			if($block->getId() === self::SLAB){
-				if(($block->getDamage() & 0x07) === ($this->meta & 0x07)){
-					$this->getLevel()->setBlock($block, Block::get(Item::DOUBLE_SLAB, $this->meta), true);
+			if($blockReplace->getId() === self::SLAB){
+				if(($blockReplace->getDamage() & 0x07) === ($this->meta & 0x07)){
+					$this->getLevel()->setBlock($blockReplace, BlockFactory::get(Item::DOUBLE_SLAB, $this->meta), true);
 
 					return true;
 				}
 
 				return false;
 			}else{
-				if($fy > 0.5){
+				if($clickVector->y > 0.5){
 					$this->meta |= 0x08;
 				}
 			}
 		}
 
-		if($block->getId() === self::SLAB and ($target->getDamage() & 0x07) !== ($this->meta & 0x07)){
+		if($blockReplace->getId() === self::SLAB and ($blockClicked->getDamage() & 0x07) !== ($this->meta & 0x07)){
 			return false;
 		}
-		$this->getLevel()->setBlock($block, $this, true, true);
+		$this->getLevel()->setBlock($blockReplace, $this, true, true);
 
 		return true;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		if($item->isPickaxe() >= 1){
-			return [
-				[$this->id, $this->meta & 0x07, 1],
-			];
-		}else{
-			return [];
-		}
+	public function getVariantBitmask(): int{
+        return 0x07;
+    }
+
+    public function getToolHarvestLevel() : int{
+        return TieredTool::TIER_WOODEN;
+    }
+
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
 
+    public function canBePlacedAt(Block $blockReplace, Vector3 $clickVector, int $face, bool $isClickedBlock): bool{
+        if (parent::canBePlacedAt($blockReplace, $clickVector, $face, $isClickedBlock))
+            return true;
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
-	}
+        if ($blockReplace->getId() === $this->getId() and $blockReplace->getVariant() === $this->getVariant()) {
+            if (($blockReplace->getDamage() & 0x08) !== 0) { //Trying to combine with top slab
+                return $clickVector->y <= 0.5 or (!$isClickedBlock and $face === Vector3::SIDE_UP);
+            } else {
+                return $clickVector->y >= 0.5 or (!$isClickedBlock and $face === Vector3::SIDE_DOWN);
+            }
+        }
+
+        return false;
+    }
 }

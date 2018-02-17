@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -26,22 +49,19 @@ class UUID {
 	private $parts = [0, 0, 0, 0];
 	private $version = null;
 
-	/**
-	 * UUID constructor.
-	 *
-	 * @param int  $part1
-	 * @param int  $part2
-	 * @param int  $part3
-	 * @param int  $part4
-	 * @param null $version
-	 */
-	public function __construct($part1 = 0, $part2 = 0, $part3 = 0, $part4 = 0, $version = null){
-		$this->parts[0] = (int) $part1;
-		$this->parts[1] = (int) $part2;
-		$this->parts[2] = (int) $part3;
-		$this->parts[3] = (int) $part4;
+    /**
+     * UUID constructor.
+     *
+     * @param int $part1
+     * @param int $part2
+     * @param int $part3
+     * @param int $part4
+     * @param int|null $version
+     */
+	public function __construct(int $part1 = 0, int $part2 = 0, int $part3 = 0, int $part4 = 0, int $version = null){
+        $this->parts = [$part1, $part2, $part3, $part4];
 
-		$this->version = $version === null ? ($this->parts[1] & 0xf000) >> 12 : (int) $version;
+		$this->version = $version ?? ($this->parts[1] & 0xf000) >> 12;
 	}
 
 	/**
@@ -56,8 +76,8 @@ class UUID {
 	 *
 	 * @return bool
 	 */
-	public function equals(UUID $uuid){
-		return $uuid->parts[0] === $this->parts[0] and $uuid->parts[1] === $this->parts[1] and $uuid->parts[2] === $this->parts[2] and $uuid->parts[3] === $this->parts[3];
+	public function equals(UUID $uuid):bool{
+		return $uuid->parts === $this->parts;
 	}
 
 	/**
@@ -120,11 +140,6 @@ class UUID {
 	 */
 	public function toString(){
 		$hex = bin2hex(self::toBinary());
-
-		//xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx 8-4-4-12
-		if($this->version !== null){
-			return substr($hex, 0, 8) . "-" . substr($hex, 8, 4) . "-" . hexdec($this->version) . substr($hex, 13, 3) . "-8" . substr($hex, 17, 3) . "-" . substr($hex, 20, 12);
-		}
 		return substr($hex, 0, 8) . "-" . substr($hex, 8, 4) . "-" . substr($hex, 12, 4) . "-" . substr($hex, 16, 4) . "-" . substr($hex, 20, 12);
 	}
 

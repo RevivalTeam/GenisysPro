@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -19,6 +42,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\inventory;
 
 use pocketmine\math\Vector3;
@@ -26,20 +51,26 @@ use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\ContainerOpenPacket;
 use pocketmine\Player;
 
-abstract class ContainerInventory extends BaseInventory {
-	/**
-	 * @param Player $who
-	 */
-	public function onOpen(Player $who){
+abstract class ContainerInventory extends BaseInventory{
+
+    /** @var Vector3|InventoryHolder */
+	protected $holder;
+
+	public function __construct(Vector3 $holder, array $items = [], int $size = null, string $title = null){
+	    $this->holder = $holder;
+	    parent::__construct($items, $size, $title);
+	}
+	
+	public function onOpen(Player $who) {
 		parent::onOpen($who);
 		$pk = new ContainerOpenPacket();
-		$pk->windowid = $who->getWindowId($this);
-		$pk->type = $this->getType()->getNetworkType();
+		$pk->windowId = $who->getWindowId($this);
+		$pk->type = $this->getNetworkType();
 		$holder = $this->getHolder();
 		if($holder instanceof Vector3){
-			$pk->x = $holder->getX();
-			$pk->y = $holder->getY();
-			$pk->z = $holder->getZ();
+			$pk->x = (int) $holder->getX();
+			$pk->y = (int) $holder->getY();
+			$pk->z = (int) $holder->getZ();
 		}else{
 			$pk->x = $pk->y = $pk->z = 0;
 		}
@@ -49,13 +80,23 @@ abstract class ContainerInventory extends BaseInventory {
 		$this->sendContents($who);
 	}
 
-	/**
-	 * @param Player $who
-	 */
-	public function onClose(Player $who){
+	public function onClose(Player $who) {
 		$pk = new ContainerClosePacket();
-		$pk->windowid = $who->getWindowId($this);
+		$pk->windowId = $who->getWindowId($this);
 		$who->dataPacket($pk);
 		parent::onClose($who);
 	}
+
+	/**
+	 * Returns the Minecraft BE inventory type used to show the inventory window to clients.
+	 * @return int
+	 */
+	abstract public function getNetworkType() : int;
+
+    /**
+     * @return Vector3
+     */
+	public function getHolder(){
+        return $this->holder;
+    }
 }

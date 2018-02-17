@@ -1,26 +1,30 @@
 <?php
 
-/*
- *
- *  _____            _               _____           
- * / ____|          (_)             |  __ \          
- *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
- *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
- *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
- * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
- *                         __/ |                    
- *                        |___/                     
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * @author GenisysPro
- * @link https://github.com/GenisysPro/GenisysPro
+/**
  *
  *
-*/
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\command\defaults;
 
@@ -29,6 +33,7 @@ use pocketmine\block\Block;
 use pocketmine\block\Lava;
 use pocketmine\block\Water;
 use pocketmine\command\CommandSender;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\item\Item;
 use pocketmine\level\Level;
@@ -37,13 +42,8 @@ use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
-class CaveCommand extends VanillaCommand {
+class CaveCommand extends VanillaCommand{
 
-	/**
-	 * CaveCommand constructor.
-	 *
-	 * @param $name
-	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
@@ -53,15 +53,8 @@ class CaveCommand extends VanillaCommand {
 		$this->setPermission("pocketmine.command.cave");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string        $commandLabel
-	 * @param array         $args
-	 *
-	 * @return bool
-	 */
-	public function execute(CommandSender $sender, $commandLabel, array $args){
-		if(!$this->testPermission($sender)){
+	public function execute(CommandSender $sender, string $commandLabel, array $args){
+		if(!$this->canExecute($sender)){
 			return true;
 		}
 
@@ -70,18 +63,15 @@ class CaveCommand extends VanillaCommand {
 			return true;
 		}
 
-		if($args[0] == "getmypos"){
+		if(isset($args[0]) && $args[0] == "getmypos"){
 			$sender->sendMessage("Your position: ({$sender->getX()}, {$sender->getY()}, {$sender->getZ()}, {$sender->getLevel()->getFolderName()})");
 			return true;
 		}
 
-		//0:旋转角度 1:洞穴长度 2:分叉数 3:洞穴强度
 		if(count($args) > 8){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
-			return false;
+            throw new InvalidCommandSyntaxException();
 		}
-		//是否自动获取玩家位置
+
 		$level = isset($args[7]) ? $sender->getServer()->getLevelByName($args[7]) : $sender->getLevel();
 		if(!$level instanceof Level){
 			$sender->sendMessage(TextFormat::RED . "Wrong LevelName");
@@ -388,16 +378,17 @@ class CaveCommand extends VanillaCommand {
 		return $n;
 	}
 
-	/**
-	 * @param Level $level
-	 * @param       $x
-	 * @param       $y
-	 * @param       $z
-	 * @param       $l
-	 * @param       $id
-	 * @param       $bd
-	 */
-	public function tiankengy(Level $level, $x, $y, $z, $l, $id, $bd){
+    /**
+     * @param Level $level
+     * @param $x
+     * @param $y
+     * @param $z
+     * @param $l
+     * @param $id
+     * @param $bd
+     * @throws \TypeError
+     */
+    public function tiankengy(Level $level, $x, $y, $z, $l, $id, $bd){
 		if($level->getBlock(new Vector3($x, $y, $z))->getId() == 0) $level->setBlock(new Vector3($x, $y, $z), Item::get($id, $bd)->getBlock());
 		if($l >= 0){
 			$random = mt_rand(0, 99999) / 100000;

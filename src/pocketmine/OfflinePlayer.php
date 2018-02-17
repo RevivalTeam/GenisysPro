@@ -1,32 +1,27 @@
 <?php
-
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *  
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *  
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *  
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *  
+ *  
  *
- *  _____            _               _____           
- * / ____|          (_)             |  __ \          
- *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
- *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
- *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
- * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
- *                         __/ |                    
- *                        |___/                     
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * @author GenisysPro
- * @link https://github.com/GenisysPro/GenisysPro
- *
- *
-*/
+ */
 
 namespace pocketmine;
 
@@ -87,7 +82,7 @@ class OfflinePlayer implements IPlayer, Metadatable {
 	/**
 	 * @param bool $value
 	 */
-	public function setOp($value){
+	public function setOp(bool $value){
 		if($value === $this->isOp()){
 			return;
 		}
@@ -109,7 +104,7 @@ class OfflinePlayer implements IPlayer, Metadatable {
 	/**
 	 * @param bool $value
 	 */
-	public function setBanned($value){
+	public function setBanned(bool $value){
 		if($value === true){
 			$this->server->getNameBans()->addBan($this->getName(), null, null, null);
 		}else{
@@ -127,7 +122,7 @@ class OfflinePlayer implements IPlayer, Metadatable {
 	/**
 	 * @param bool $value
 	 */
-	public function setWhitelisted($value){
+	public function setWhitelisted(bool $value){
 		if($value === true){
 			$this->server->addWhitelist(strtolower($this->getName()));
 		}else{
@@ -163,39 +158,41 @@ class OfflinePlayer implements IPlayer, Metadatable {
 		return $this->namedtag instanceof CompoundTag;
 	}
 
-	/**
-	 * @param string        $metadataKey
-	 * @param MetadataValue $metadataValue
-	 */
-	public function setMetadata($metadataKey, MetadataValue $metadataValue){
+
+    /**
+     * @param string $metadataKey
+     * @param MetadataValue $metadataValue
+     * @throws \Exception
+     */
+    public function setMetadata(string $metadataKey, MetadataValue $metadataValue){
 		$this->server->getPlayerMetadata()->setMetadata($this, $metadataKey, $metadataValue);
 	}
 
-	/**
-	 * @param string $metadataKey
-	 *
-	 * @return MetadataValue[]
-	 */
-	public function getMetadata($metadataKey){
+    /**
+     * @param string $metadataKey
+     * @return MetadataValue[]
+     * @throws \Exception
+     */
+    public function getMetadata(string $metadataKey){
 		return $this->server->getPlayerMetadata()->getMetadata($this, $metadataKey);
 	}
 
-	/**
-	 * @param string $metadataKey
-	 *
-	 * @return bool
-	 */
-	public function hasMetadata($metadataKey){
+    /**
+     * @param string $metadataKey
+     * @return bool
+     * @throws \Exception
+     */
+    public function hasMetadata(string $metadataKey) : bool{
 		return $this->server->getPlayerMetadata()->hasMetadata($this, $metadataKey);
 	}
 
-	/**
-	 * @param string $metadataKey
-	 * @param Plugin $plugin
-	 */
-	public function removeMetadata($metadataKey, Plugin $plugin){
+    /**
+     * @param string $metadataKey
+     * @param Plugin $plugin
+     * @throws \Exception
+     */
+    public function removeMetadata(string $metadataKey, Plugin $plugin){
 		$this->server->getPlayerMetadata()->removeMetadata($this, $metadataKey, $plugin);
 	}
-
 
 }

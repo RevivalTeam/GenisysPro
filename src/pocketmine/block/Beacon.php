@@ -1,23 +1,34 @@
 <?php
-
-/*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+/**
  *
- * @author SuperXingKong
- * 
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
  *
  */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\nbt\tag\ByteTag;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\tile\Beacon as TileBeacon;
 use pocketmine\tile\Tile;
@@ -26,86 +37,31 @@ class Beacon extends Transparent {
 
 	protected $id = self::BEACON;
 
-	/**
-	 * Beacon constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canBeActivated() : bool{
-		return true;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName(){
+	public function getName() : string{
 		return "Beacon";
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getLightLevel(){
+	public function getLightLevel() : int{
 		return 15;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getResistance(){
-		return 15;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 3;
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		$this->getLevel()->setBlock($this, $this, true, true);
-		$nbt = new CompoundTag("", [
-			new StringTag("id", Tile::BEACON),
-			new ByteTag("isMovable", (bool) false),
-			new IntTag("primary", 0),
-			new IntTag("secondary", 0),
-			new IntTag("x", $block->x),
-			new IntTag("y", $block->y),
-			new IntTag("z", $block->z)
-		]);
-		Tile::createTile(Tile::BEACON, $this->getLevel(), $nbt);
-		return true;
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+		$bool = $this->getLevel()->setBlock($this, $this, true, true);
+        Tile::createTile(Tile::BEACON, $this->getLevel(), TileBeacon::createNBT($this, $face, $item, $player));
+		return $bool;
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Item $item, Player $player = null){
+	public function onActivate(Item $item, Player $player = null) : bool{
 		if($player instanceof Player){
-			$top = $this->getSide(1);
+			$top = $this->getSide(Vector3::SIDE_UP);
 			if($top->isTransparent() !== true){
 				return true;
 			}
@@ -115,34 +71,12 @@ class Beacon extends Transparent {
 			if($t instanceof TileBeacon){
 				$beacon = $t;
 			}else{
-				$nbt = new CompoundTag("", [
-					new StringTag("id", Tile::BEACON),
-					new ByteTag("isMovable", (bool) false),
-					new IntTag("primary", 0),
-					new IntTag("secondary", 0),
-					new IntTag("x", $this->x),
-					new IntTag("y", $this->y),
-					new IntTag("z", $this->z)
-				]);
-				Tile::createTile(Tile::BEACON, $this->getLevel(), $nbt);
+				$beacon = Tile::createTile(Tile::BEACON, $this->getLevel(), TileBeacon::createNBT($this));
 			}
 
-			if($player->isCreative() and $player->getServer()->limitedCreative){
-				return true;
-			}
 			$player->addWindow($beacon->getInventory());
 		}
 
-		return true;
-	}
-
-	/**
-	 * @param Item $item
-	 *
-	 * @return bool
-	 */
-	public function onBreak(Item $item){
-		$this->getLevel()->setBlock($this, new Air(), true, true);
 		return true;
 	}
 

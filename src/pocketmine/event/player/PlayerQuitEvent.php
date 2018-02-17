@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -14,64 +37,58 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\player;
 
+use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
 
 /**
  * Called when a player leaves the server
  */
-class PlayerQuitEvent extends PlayerEvent {
+class PlayerQuitEvent extends PlayerEvent{
 	public static $handlerList = null;
 
-	/** @var string */
+	/** @var TranslationContainer|string */
 	protected $quitMessage;
-	protected $autoSave = true;
+	/** @var string */
+	protected $quitReason;
 
 	/**
-	 * PlayerQuitEvent constructor.
-	 *
-	 * @param Player $player
-	 * @param        $quitMessage
-	 * @param bool   $autoSave
+	 * @param Player                      $player
+	 * @param TranslationContainer|string $quitMessage
+	 * @param string                      $quitReason
 	 */
-	public function __construct(Player $player, $quitMessage, $autoSave = true){
+	public function __construct(Player $player, $quitMessage, string $quitReason){
 		$this->player = $player;
 		$this->quitMessage = $quitMessage;
-		$this->autoSave = $autoSave;
+		$this->quitReason = $quitReason;
 	}
 
 	/**
-	 * @param $quitMessage
+	 * @param TranslationContainer|string $quitMessage
 	 */
 	public function setQuitMessage($quitMessage){
 		$this->quitMessage = $quitMessage;
 	}
 
 	/**
-	 * @return string
+	 * @return TranslationContainer|string
 	 */
 	public function getQuitMessage(){
 		return $this->quitMessage;
 	}
 
 	/**
-	 * @return bool
+	 * @return string
 	 */
-	public function getAutoSave(){
-		return $this->autoSave;
+	public function getQuitReason() : string{
+		return $this->quitReason;
 	}
-
-	/**
-	 * @param bool $value
-	 */
-	public function setAutoSave($value = true){
-		$this->autoSave = (bool) $value;
-	}
-
 }

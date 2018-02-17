@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -31,7 +54,9 @@ interface AdvancedSourceInterface extends SourceInterface {
 	 * @param string $address
 	 * @param int    $timeout Seconds
 	 */
-	public function blockAddress($address, $timeout = 300);
+	public function blockAddress(string $address, int $timeout = 300);
+
+	public function unblockAddress(string $address);
 
 	/**
 	 * @param Network $network
@@ -43,6 +68,6 @@ interface AdvancedSourceInterface extends SourceInterface {
 	 * @param int    $port
 	 * @param string $payload
 	 */
-	public function sendRawPacket($address, $port, $payload);
+	public function sendRawPacket(string $address, int $port, string $payload);
 
 }

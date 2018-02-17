@@ -1,36 +1,47 @@
 <?php
 
-/*
+/**
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
  *
  */
+
+declare(strict_types=1);
 
 namespace pocketmine\tile;
 
 use pocketmine\level\Level;
+use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\utils\Color;
 
 class Cauldron extends Spawnable {
+
+    const TAG_POTION_ID = "PotionId";
+    const TAG_SPLASH_POTION = "SplashPotion";
+    const TAG_CUSTOM_COLOR = "CustomColor";
 
 	/**
 	 * Cauldron constructor.
@@ -39,30 +50,30 @@ class Cauldron extends Spawnable {
 	 * @param CompoundTag $nbt
 	 */
 	public function __construct(Level $level, CompoundTag $nbt){
-		if(!isset($nbt->PotionId) or !($nbt->PotionId instanceof ShortTag)){
-			$nbt->PotionId = new ShortTag("PotionId", 0xffff);
+		if(!$nbt->hasTag(self::TAG_POTION_ID, ShortTag::class)){
+			$nbt->setShort(self::TAG_POTION_ID, -1);
 		}
-		if(!isset($nbt->SplashPotion) or !($nbt->SplashPotion instanceof ByteTag)){
-			$nbt->SplashPotion = new ByteTag("SplashPotion", 0);
+		if(!$nbt->hasTag(self::TAG_SPLASH_POTION, ByteTag::class)){
+			$nbt->setByte(self::TAG_SPLASH_POTION, 0);
 		}
-		if(!isset($nbt->Items) or !($nbt->Items instanceof ListTag)){
-			$nbt->Items = new ListTag("Items", []);
+		if(!$nbt->hasTag("Items", ListTag::class)){
+			$nbt->setTag(new ListTag("Items", [], NBT::TAG_Compound));
 		}
 		parent::__construct($level, $nbt);
 	}
 
-	/**
-	 * @return mixed|null
-	 */
-	public function getPotionId(){
-		return $this->namedtag["PotionId"];
+    /**
+     * @return int
+     */
+    public function getPotionId() : int{
+		return $this->namedtag->getShort(self::TAG_POTION_ID);
 	}
 
 	/**
-	 * @param $potionId
+	 * @param int $potionId
 	 */
-	public function setPotionId($potionId){
-		$this->namedtag->PotionId = new ShortTag("PotionId", $potionId);
+	public function setPotionId(int $potionId){
+		$this->namedtag->setShort(self::TAG_POTION_ID, $potionId);
 		$this->onChanged();
 	}
 
@@ -70,21 +81,21 @@ class Cauldron extends Spawnable {
 	 * @return bool
 	 */
 	public function hasPotion(){
-		return $this->namedtag["PotionId"] !== 0xffff;
+		return $this->getPotionId() !== -1;
 	}
 
 	/**
 	 * @return bool
 	 */
 	public function getSplashPotion(){
-		return ($this->namedtag["SplashPotion"] == true);
+		return ($this->namedtag->getByte(self::TAG_SPLASH_POTION) == 1);
 	}
 
 	/**
 	 * @param $bool
 	 */
-	public function setSplashPotion($bool){
-		$this->namedtag->SplashPotion = new ByteTag("SplashPotion", ($bool == true) ? 1 : 0);
+	public function setSplashPotion(bool $bool){
+		$this->namedtag->setByte(self::TAG_SPLASH_POTION, ($bool == true) ? 1 : 0);
 		$this->onChanged();
 	}
 
@@ -93,7 +104,7 @@ class Cauldron extends Spawnable {
 	 */
 	public function getCustomColor(){//
 		if($this->isCustomColor()){
-			$color = $this->namedtag["CustomColor"];
+			$color = $this->namedtag->getInt(self::TAG_CUSTOM_COLOR);
 			$green = ($color >> 8) & 0xff;
 			$red = ($color >> 16) & 0xff;
 			$blue = ($color) & 0xff;
@@ -106,69 +117,49 @@ class Cauldron extends Spawnable {
 	 * @return int
 	 */
 	public function getCustomColorRed(){
-		return ($this->namedtag["CustomColor"] >> 16) & 0xff;
+		return ($this->namedtag->getInt(self::TAG_CUSTOM_COLOR) >> 16) & 0xff;
 	}
 
 	/**
 	 * @return int
 	 */
 	public function getCustomColorGreen(){
-		return ($this->namedtag["CustomColor"] >> 8) & 0xff;
+		return ($this->namedtag->getInt(self::TAG_CUSTOM_COLOR) >> 8) & 0xff;
 	}
 
 	/**
 	 * @return int
 	 */
 	public function getCustomColorBlue(){
-		return ($this->namedtag["CustomColor"]) & 0xff;
+		return ($this->namedtag->getInt(self::TAG_CUSTOM_COLOR)) & 0xff;
 	}
 
 	/**
 	 * @return bool
 	 */
 	public function isCustomColor(){
-		return isset($this->namedtag->CustomColor);
+		return $this->namedtag->hasTag(self::TAG_CUSTOM_COLOR, IntTag::class);
 	}
 
-	/**
-	 * @param     $r
-	 * @param int $g
-	 * @param int $b
-	 */
-	public function setCustomColor($r, $g = 0xff, $b = 0xff){
-		if($r instanceof Color){
-			$color = ($r->getRed() << 16 | $r->getGreen() << 8 | $r->getBlue()) & 0xffffff;
-		}else{
-			$color = ($r << 16 | $g << 8 | $b) & 0xffffff;
-		}
-		$this->namedtag->CustomColor = new IntTag("CustomColor", $color);
+	public function setCustomColor(Color $color){
+		$this->namedtag->setInt(self::TAG_CUSTOM_COLOR, $color->toARGB());
 		$this->onChanged();
 	}
 
 	public function clearCustomColor(){
-		if(isset($this->namedtag->CustomColor)){
-			unset($this->namedtag->CustomColor);
+		if($this->namedtag->hasTag(self::TAG_CUSTOM_COLOR)){
+			$this->namedtag->removeTag(self::TAG_CUSTOM_COLOR);
 		}
 		$this->onChanged();
 	}
 
-	/**
-	 * @return CompoundTag
-	 */
-	public function getSpawnCompound(){
-		$nbt = new CompoundTag("", [
-			new StringTag("id", Tile::CAULDRON),
-			new IntTag("x", (Int) $this->x),
-			new IntTag("y", (Int) $this->y),
-			new IntTag("z", (Int) $this->z),
-			new ShortTag("PotionId", $this->namedtag["PotionId"]),
-			new ByteTag("SplashPotion", $this->namedtag["SplashPotion"]),
-			new ListTag("Items", $this->namedtag["Items"])//unused?
-		]);
+	public function addAdditionalSpawnData(CompoundTag $nbt){
+	    $nbt->setTag($this->namedtag->getTag(self::TAG_POTION_ID));
+	    $nbt->setTag($this->namedtag->getTag(self::TAG_SPLASH_POTION));
+	    $nbt->setTag($this->namedtag->getTag("Items"));
 
-		if($this->getPotionId() === 0xffff and $this->isCustomColor()){
-			$nbt->CustomColor = $this->namedtag->CustomColor;
-		}
-		return $nbt;
-	}
+        if($this->getPotionId() === -1 and $this->isCustomColor()){
+            $nbt->setTag($this->namedtag->getTag(self::TAG_CUSTOM_COLOR));
+        }
+    }
 }

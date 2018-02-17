@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -19,40 +42,38 @@
  *
 */
 
+declare(strict_types=1);
+
 
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-class ResourcePackDataInfoPacket extends DataPacket {
-	const NETWORK_ID = ProtocolInfo::RESOURCE_PACK_DATA_INFO_PACKET;
+class ResourcePackDataInfoPacket extends DataPacket{
+    const NETWORK_ID = ProtocolInfo::RESOURCE_PACK_DATA_INFO_PACKET;
 
-	public $packId;
-	public $maxChunkSize;
-	public $chunkCount;
-	public $compressedPackSize;
-	public $sha256;
+    const MAX_CHUNK_SIZE = 1048576; // 1MB
 
-	/**
-	 *
-	 */
-	public function decode(){
-		$this->packId = $this->getString();
-		$this->maxChunkSize = $this->getLInt();
-		$this->chunkCount = $this->getLInt();
-		$this->compressedPackSize = $this->getLLong();
-		$this->sha256 = $this->getString();
-	}
+    /** @var string */
+    public $packId;
+    /** @var int */
+    public $fileSize;
+    /** @var string */
+    public $sha256;
 
-	/**
-	 *
-	 */
-	public function encode(){
-		$this->reset();
-		$this->putString($this->packId);
-		$this->putLInt($this->maxChunkSize);
-		$this->putLInt($this->chunkCount);
-		$this->putLLong($this->compressedPackSize);
-		$this->putString($this->sha256);
-	}
+    protected function decodePayload(){ // TODO : Test et kaldırmayı
+        $this->packId = $this->getString();
+        $this->maxChunkSize = $this->getLInt();
+        $this->chunkCount = $this->getLInt();
+        $this->compressedPackSize = $this->getLLong();
+        $this->sha256 = $this->getString();
+    }
+
+    protected function encodePayload(){
+        $this->putString($this->packId);
+        $this->putLInt(self::MAX_CHUNK_SIZE);
+        $this->putLInt((int) ceil($this->fileSize / self::MAX_CHUNK_SIZE));
+        $this->putLLong($this->fileSize);
+        $this->putString($this->sha256);
+    }
 }

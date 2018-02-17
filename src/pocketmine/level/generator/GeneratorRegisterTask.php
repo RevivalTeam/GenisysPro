@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -22,6 +45,7 @@
 namespace pocketmine\level\generator;
 
 use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\Level;
 use pocketmine\level\SimpleChunkManager;
@@ -35,6 +59,7 @@ class GeneratorRegisterTask extends AsyncTask {
 	public $seed;
 	public $levelId;
 	public $waterHeight;
+    public $worldHeight = Level::Y_MAX;
 
 	/**
 	 * GeneratorRegisterTask constructor.
@@ -51,9 +76,9 @@ class GeneratorRegisterTask extends AsyncTask {
 	}
 
 	public function onRun(){
-		Block::init();
+		BlockFactory::init();
 		Biome::init();
-		$manager = new SimpleChunkManager($this->seed, $this->waterHeight);
+		$manager = new SimpleChunkManager($this->seed, $this->worldHeight);
 		$this->saveToThreadStore("generation.level{$this->levelId}.manager", $manager);
 		/** @var Generator $generator */
 		$generator = $this->generator;

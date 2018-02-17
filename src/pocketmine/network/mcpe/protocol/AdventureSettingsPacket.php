@@ -1,12 +1,35 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,17 +38,19 @@
  *
  * @author PocketMine Team
  * @link http://www.pocketmine.net/
- * 
+ *
  *
 */
+
+declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
+use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
 
-class AdventureSettingsPacket extends DataPacket {
-
+class AdventureSettingsPacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::ADVENTURE_SETTINGS_PACKET;
 
 	const PERMISSION_NORMAL = 0;
@@ -34,61 +59,85 @@ class AdventureSettingsPacket extends DataPacket {
 	const PERMISSION_AUTOMATION = 3;
 	const PERMISSION_ADMIN = 4;
 
-	public $worldImmutable = false;
-	public $noPvp = false;
-	public $noPvm = false;
-	public $noMvp = false;
+	const WORLD_IMMUTABLE = 1;
+	const NO_PVP = 2;
+	const NO_PVM = 4;
+	const NO_MVP = 8;
+	const NO_EVP = 16;
+	const AUTO_JUMP = 32;
+	const ALLOW_FLIGHT = 64;
+	const NO_CLIP = 128;
+	const FLYING = 512;
+	const MUTED = 1024;
+	
+	const WORLD_BUILDER = 0x100;
 
-	public $autoJump = false;
-	public $allowFlight = false;
-	public $noClip = false;
-	public $worldBuilder = false;
-	public $isFlying = false;
-	public $muted = false;
+	const BUILD_AND_MINE = 1;
+	const DOORS_AND_SWITCHES = 2;
+	const OPEN_CONTAINERS = 4;
+	const ATTACK_PLAYERS = 8;
+	const ATTACK_MOBS = 16;
+	const OPERATOR = 32;
+	const TELEPORT = 64;
 
+	/** @var int */
 	public $flags = 0;
-	public $userPermission;
+	/** @var int */
+	public $commandPermission = self::PERMISSION_NORMAL;
+	/** @var int */
+	public $abilities = -1;
+	/** @var int */
+	public $playerPermission = PlayerPermissions::MEMBER;
+	/** @var int */
+	public $customPermissions = 0;
+	/** @var int */
+	public $entityUniqueId; //This is a little-endian long, NOT a var-long. (WTF Mojang)
 
-	/**
-	 *
-	 */
-	public function decode(){
+	protected function decodePayload(){
 		$this->flags = $this->getUnsignedVarInt();
-		$this->userPermission = $this->getUnsignedVarInt();
-
-		$this->worldImmutable = (bool) ($this->flags & 1);
-		$this->noPvp = (bool) ($this->flags & (1 << 1));
-		$this->noPvm = (bool) ($this->flags & (1 << 2));
-		$this->noMvp = (bool) ($this->flags & (1 << 3));
-
-		$this->autoJump = (bool) ($this->flags & (1 << 5));
-		$this->allowFlight = (bool) ($this->flags & (1 << 6));
-		$this->noClip = (bool) ($this->flags & (1 << 7));
-		$this->worldBuilder = (bool) ($this->flags & (1 << 8));
-		$this->isFlying = (bool) ($this->flags & (1 << 9));
-		$this->muted = (bool) ($this->flags & (1 << 10));
+		$this->commandPermission = $this->getUnsignedVarInt();
+		$this->abilities = $this->getUnsignedVarInt();
+		$this->playerPermission = $this->getUnsignedVarInt();
+		$this->customPermissions = $this->getUnsignedVarInt();
+		$this->entityUniqueId = $this->getLLong();
 	}
 
-	/**
-	 *
-	 */
-	public function encode(){
-		$this->reset();
-
-		$this->flags |= ((int) $this->worldImmutable);
-		$this->flags |= ((int) $this->noPvp) << 1;
-		$this->flags |= ((int) $this->noPvm) << 2;
-		$this->flags |= ((int) $this->noMvp) << 3;
-
-		$this->flags |= ((int) $this->autoJump) << 5;
-		$this->flags |= ((int) $this->allowFlight) << 6;
-		$this->flags |= ((int) $this->noClip) << 7;
-		$this->flags |= ((int) $this->worldBuilder) << 8;
-		$this->flags |= ((int) $this->isFlying) << 9;
-		$this->flags |= ((int) $this->muted) << 10;
-
+	protected function encodePayload(){
 		$this->putUnsignedVarInt($this->flags);
-		$this->putUnsignedVarInt($this->userPermission);
+		$this->putUnsignedVarInt($this->commandPermission);
+		$this->putUnsignedVarInt($this->abilities);
+		$this->putUnsignedVarInt($this->playerPermission);
+		$this->putUnsignedVarInt($this->customPermissions);
+		$this->putLLong($this->entityUniqueId);
 	}
 
+	public function setPlayerFlag(int $flag, bool $value = true){
+		if($value){
+		 $this->flags |= $flag;
+		}
+	}
+	
+	public function getPlayerFlag(int $flag){
+		return ($this->flags & $flag) !== 0;
+	}
+	
+	public function setAbility(int $flag, bool $value = true){
+		if($value){
+		 $this->abilities |= $flag;
+		}
+	}
+	
+	public function getAbility(int $flag){
+		return ($this->abilities & $flag) !== 0;
+	}
+	
+	public function setCustomPermission(int $flag, bool $value = true){
+		if($value){
+		 $this->customPermissions |= $flag;
+		}
+	}
+	
+	public function getCustomPermission(int $flag){
+		return ($this->customPermissions & $flag) !== 0;
+	}
 }

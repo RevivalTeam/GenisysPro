@@ -1,26 +1,30 @@
 <?php
 
-/*
- *
- *  _____            _               _____           
- * / ____|          (_)             |  __ \          
- *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
- *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
- *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
- * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
- *                         __/ |                    
- *                        |___/                     
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * @author GenisysPro
- * @link https://github.com/GenisysPro/GenisysPro
+/**
  *
  *
-*/
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\item;
 
@@ -28,9 +32,8 @@ use pocketmine\block\Block;
 use pocketmine\block\Fire;
 use pocketmine\block\Portal;
 use pocketmine\block\Solid;
-use pocketmine\level\Level;
-use pocketmine\Player;
 use pocketmine\math\Vector3;
+use pocketmine\Player;
 
 class FireCharge extends Item {
 	/** @var Vector3 */
@@ -40,39 +43,21 @@ class FireCharge extends Item {
 	 * FireCharge constructor.
 	 *
 	 * @param int $meta
-	 * @param int $count
 	 */
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::FIRE_CHARGE, $meta, $count, "Fire Charge");
+	public function __construct(int $meta = 0){
+		parent::__construct(self::FIRE_CHARGE, $meta, "Fire Charge");
 		if($this->temporalVector === null){
 			$this->temporalVector = new Vector3(0, 0, 0);
 		}
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canBeActivated() : bool{
-		return true;
-	}
-
-	/**
-	 * @param Level  $level
-	 * @param Player $player
-	 * @param Block  $block
-	 * @param Block  $target
-	 * @param        $face
-	 * @param        $fx
-	 * @param        $fy
-	 * @param        $fz
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Level $level, Player $player, Block $block, Block $target, $face, $fx, $fy, $fz){
-		if($target->getId() === Block::OBSIDIAN and $player->getServer()->netherEnabled){
-			$tx = $target->getX();
-			$ty = $target->getY();
-			$tz = $target->getZ();
+	// TODO : OPTIMIZE
+	public function onActivate(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickPos) : bool{
+	    $level = $player->getLevel();
+		if($blockClicked->getId() === Block::OBSIDIAN and $player->getServer()->netherEnabled){
+			$tx = $blockClicked->getX();
+			$ty = $blockClicked->getY();
+			$tz = $blockClicked->getZ();
 			$x_max = $tx;
 			$x_min = $tx;
 			for($x = $tx + 1; $level->getBlock($this->temporalVector->setComponents($x, $ty, $tz))->getId() == Block::OBSIDIAN; $x++){
@@ -105,8 +90,7 @@ class FireCharge extends Item {
 							}
 						}
 						if($player->isSurvival()){
-							$this->useOn($block, 2);
-							$player->getInventory()->setItemInHand($this);
+							$this->useOn($blockReplace);
 						}
 						return true;
 					}
@@ -145,8 +129,7 @@ class FireCharge extends Item {
 							}
 						}
 						if($player->isSurvival()){
-							$this->useOn($block, 2);
-							$player->getInventory()->setItemInHand($this);
+							$this->useOn($blockReplace);
 						}
 						return true;
 					}
@@ -154,18 +137,17 @@ class FireCharge extends Item {
 			}
 		}
 
-		if($block->getId() === self::AIR and ($target instanceof Solid)){
-			$level->setBlock($block, new Fire(), true);
+		if($blockReplace->getId() === self::AIR and ($blockClicked instanceof Solid)){
+			$level->setBlock($blockReplace, new Fire(), true);
 
 			/** @var Fire $block */
 			$block = $level->getBlock($block);
 			if($block->getSide(Vector3::SIDE_DOWN)->isTopFacingSurfaceSolid() or $block->canNeighborBurn()){
-				$level->scheduleUpdate($block, $block->getTickRate() + mt_rand(0, 10));
+				$level->scheduleDelayedBlockUpdate($block, $block->getTickRate() + mt_rand(0, 10));
 			}
 
 			if($player->isSurvival()){
-				$this->useOn($block, 2);
-				$player->getInventory()->setItemInHand($this);
+				$this->useOn($block);
 			}
 
 			return true;

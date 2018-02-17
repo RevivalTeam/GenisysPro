@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -23,20 +46,25 @@ namespace pocketmine\inventory;
 
 use pocketmine\item\Item;
 use pocketmine\tile\BrewingStand;
+use pocketmine\network\mcpe\protocol\types\WindowTypes;
 
 class BrewingInventory extends ContainerInventory {
-	/**
-	 * BrewingInventory constructor.
-	 *
-	 * @param BrewingStand $tile
-	 */
+
+    /** @var BrewingStand */
+    protected $holder;
+
 	public function __construct(BrewingStand $tile){
-		parent::__construct($tile, InventoryType::get(InventoryType::BREWING_STAND));
+		parent::__construct($tile);
+	}
+	
+	public function getName() : string{
+		return "Brewing";
+	}
+	
+	public function getDefaultSize() : int{
+		return 4;
 	}
 
-	/**
-	 * @return BrewingStand
-	 */
 	public function getHolder(){
 		return $this->holder;
 	}
@@ -60,10 +88,14 @@ class BrewingInventory extends ContainerInventory {
 	 * @param Item $before
 	 * @param bool $send
 	 */
-	public function onSlotChange($index, $before, $send){
+	public function onSlotChange(int $index, Item $before, bool $send){
 		parent::onSlotChange($index, $before, $send);
 
 		$this->getHolder()->scheduleUpdate();
 		$this->getHolder()->updateSurface();
+	}
+	
+	public function getNetworkType() : int{
+		return WindowTypes::BREWING_STAND;
 	}
 }

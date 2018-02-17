@@ -1,125 +1,107 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\item\TieredTool;
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
-class SnowLayer extends Flowable {
+class SnowLayer extends Flowable{
 
 	protected $id = self::SNOW_LAYER;
 
-	/**
-	 * SnowLayer constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Snow Layer";
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canBeReplaced(){
+	public function canBeReplaced() : bool{
 		return true;
 	}
 
-	/**
-	 * @return float
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.1;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_SHOVEL;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_SHOVEL;
 	}
 
+    public function getToolHarvestLevel() : int{
+        return TieredTool::TIER_WOODEN;
+    }
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		$down = $this->getSide(0);
-		if($down->isSolid()){
-			$this->getLevel()->setBlock($block, $this, true);
+	public function ticksRandomly(): bool{
+        return true;
+    }
 
-			return true;
-		}
+    public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+        if($blockReplace->getSide(Vector3::SIDE_DOWN)->isSolid()){
+            //TODO: fix placement
+            $this->getLevel()->setBlock($blockReplace, $this, true);
 
-		return false;
+            return true;
+        }
+
+        return false;
 	}
 
-	/**
-	 * @param int $type
-	 *
-	 * @return bool|int
-	 */
-	public function onUpdate($type){
-		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if($this->getSide(0)->getId() === self::AIR){ //Replace with common break method
-				$this->getLevel()->setBlock($this, new Air(), true);
+	public function onUpdate(int $type){
+        if($type === Level::BLOCK_UPDATE_NORMAL){
+            if(!$this->getSide(Vector3::SIDE_DOWN)->isSolid()){
+                $this->getLevel()->setBlock($this, BlockFactory::get(Block::AIR), false, false);
 
-				return Level::BLOCK_UPDATE_NORMAL;
-			}
-		}
+                return Level::BLOCK_UPDATE_NORMAL;
+            }
+        }elseif($type === Level::BLOCK_UPDATE_RANDOM){
+            if($this->level->getBlockLightAt($this->x, $this->y, $this->z) >= 12){
+                $this->getLevel()->setBlock($this, BlockFactory::get(Block::AIR), false, false);
 
-		return false;
+                return Level::BLOCK_UPDATE_RANDOM;
+            }
+        }
+
+        return false;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		if($item->isShovel() !== false){
-			return [
-				[Item::SNOWBALL, 0, 1],
-			];
-		}
+	public function getDropsForCompatibleTool(Item $item): array{
+        return [
+            Item::get(Item::SNOWBALL) //TODO: check layer count
+        ];
+    }
 
-		return [];
-	}
+    public function isAffectedBySilkTouch(): bool{
+        return false;
+    }
 }

@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -441,7 +464,7 @@ class Vector3 {
 	 * @param $y
 	 * @param $z
 	 *
-	 * @return Vector3
+	 * @return $this
 	 */
 	public function setComponents($x, $y, $z){
 		$this->x = $x;
@@ -472,6 +495,10 @@ class Vector3 {
 		return "Vector3(x=" . $this->x . ",y=" . $this->y . ",z=" . $this->z . ")";
 	}
 
+	public function toArray() : array{
+	    return [$this->x, $this->y, $this->z];
+    }
+
 	/**
 	 * @param Random $random
 	 *
@@ -480,4 +507,34 @@ class Vector3 {
 	public static function createRandomDirection(Random $random){
 		return VectorMath::getDirection3D($random->nextFloat() * 2 * pi(), $random->nextFloat() * 2 * pi());
 	}
+
+    public static function rotateYCCW(int $side) : int{
+        switch($side){
+            case Vector3::SIDE_NORTH:
+                return Vector3::SIDE_WEST;
+            case Vector3::SIDE_EAST:
+                return Vector3::SIDE_NORTH;
+            case Vector3::SIDE_SOUTH:
+                return Vector3::SIDE_EAST;
+            case Vector3::SIDE_WEST:
+                return Vector3::SIDE_SOUTH;
+            default:
+                throw new \RuntimeException("Unable to get counter-clockwise Y-rotated face of $side");
+        }
+    }
+
+    public static function rotateY(int $side) : int{
+        switch($side){
+            case Vector3::SIDE_NORTH:
+                return Vector3::SIDE_EAST;
+            case Vector3::SIDE_EAST:
+                return Vector3::SIDE_SOUTH;
+            case Vector3::SIDE_SOUTH:
+                return Vector3::SIDE_WEST;
+            case Vector3::SIDE_WEST:
+                return Vector3::SIDE_NORTH;
+            default:
+                throw new \RuntimeException("Unable to get Y-rotated face of $side");
+        }
+    }
 }

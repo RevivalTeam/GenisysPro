@@ -1,26 +1,32 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
-
 
 use pocketmine\item\Item;
 use pocketmine\level\Level;
@@ -32,53 +38,26 @@ class WaterLily extends Flowable {
 
 	protected $id = self::WATER_LILY;
 
-	/**
-	 * WaterLily constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function isSolid(){
+	public function isSolid() : bool{
 		return false;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Lily Pad";
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getResistance(){
-		return 0;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function canPassThrough(){
+	public function canPassThrough() : bool{
 		return true;
 	}
 
-	/**
-	 * @return AxisAlignedBB
-	 */
 	protected function recalculateBoundingBox(){
 		return new AxisAlignedBB(
 			$this->x,
@@ -90,22 +69,9 @@ class WaterLily extends Flowable {
 		);
 	}
 
-
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		if($target instanceof Water){
-			$up = $target->getSide(Vector3::SIDE_UP);
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+		if($blockClicked instanceof Water){
+			$up = $blockClicked->getSide(Vector3::SIDE_UP);
 			if($up->getId() === Block::AIR){
 				$this->getLevel()->setBlock($up, $this, true, true);
 				return true;
@@ -115,12 +81,7 @@ class WaterLily extends Flowable {
 		return false;
 	}
 
-	/**
-	 * @param int $type
-	 *
-	 * @return bool|int
-	 */
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			if(!($this->getSide(0) instanceof Water)){
 				$this->getLevel()->useBreakOn($this);
@@ -131,14 +92,4 @@ class WaterLily extends Flowable {
 		return false;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		return [
-			[$this->id, 0, 1]
-		];
-	}
 }

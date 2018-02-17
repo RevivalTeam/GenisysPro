@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -33,7 +56,7 @@ interface Metadatable {
 	 *
 	 * @return void
 	 */
-	public function setMetadata($metadataKey, MetadataValue $newMetadataValue);
+	public function setMetadata(string $metadataKey, MetadataValue $newMetadataValue);
 
 	/**
 	 * Returns a list of previously set metadata values from the implementing
@@ -43,7 +66,7 @@ interface Metadatable {
 	 *
 	 * @return MetadataValue[]
 	 */
-	public function getMetadata($metadataKey);
+	public function getMetadata(string $metadataKey);
 
 	/**
 	 * Tests to see whether the implementing object contains the given
@@ -53,7 +76,7 @@ interface Metadatable {
 	 *
 	 * @return bool
 	 */
-	public function hasMetadata($metadataKey);
+	public function hasMetadata(string $metadataKey) : bool;
 
 	/**
 	 * Removes the given metadata value from the implementing object's
@@ -64,6 +87,6 @@ interface Metadatable {
 	 *
 	 * @return void
 	 */
-	public function removeMetadata($metadataKey, Plugin $owningPlugin);
+	public function removeMetadata(string $metadataKey, Plugin $owningPlugin);
 
 }

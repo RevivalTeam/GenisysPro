@@ -1,31 +1,43 @@
 <?php
 
-/*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+/**
  *
  *
-*/
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
+declare(strict_types=1);
 
 namespace pocketmine\item;
 
+use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\enchantment\ProtectionEnchantment;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
+use pocketmine\Player;
 use pocketmine\utils\Color;
+use pocketmine\utils\MainLogger;
 
 abstract class Armor extends Item {
 	const TIER_LEATHER = 1;
@@ -70,7 +82,7 @@ abstract class Armor extends Item {
 			2 => 73,
 			3 => 70
 		];
-		$unbreakingl = $this->getEnchantmentLevel(Enchantment::TYPE_MINING_DURABILITY);
+		$unbreakingl = $this->getEnchantmentLevel(Enchantment::UNBREAKING);
 		if(mt_rand(1, 100) > $unbreakings[$unbreakingl]){
 			return true;
 		}
@@ -98,7 +110,7 @@ abstract class Armor extends Item {
 		}else{
 			$tag = new CompoundTag("", []);
 		}
-		$tag->customColor = new IntTag("customColor", $color->getColorCode());
+		$tag->setInt("CustomColor", $color->toRGB());
 		$this->setCompoundTag($tag);
 	}
 
@@ -144,12 +156,12 @@ abstract class Armor extends Item {
 		return false;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function getArmorValue(){
-		return false;
-	}
+    /**
+     * @return int
+     */
+    public function getDefensePoints() : int{
+        return 0;
+    }
 
 	/**
 	 * @return bool
@@ -178,4 +190,51 @@ abstract class Armor extends Item {
 	public function isBoots(){
 		return false;
 	}
+
+	public function onClickAir(Player $player, Vector3 $directionVector): bool{
+        switch($this->getArmorType()){
+            case Armor::TYPE_HELMET:
+                $index = ArmorInventory::SLOT_HEAD;
+                break;
+            case Armor::TYPE_CHESTPLATE:
+                $index = ArmorInventory::SLOT_CHEST;
+                break;
+            case Armor::TYPE_LEGGINGS:
+                $index = ArmorInventory::SLOT_LEGS;
+                break;
+            case Armor::TYPE_BOOTS:
+                $index = ArmorInventory::SLOT_FEET;
+                break;
+            default:
+                MainLogger::getLogger()->debug("Zırh tespit edilemedi. (ID: ".$this->getId().")");
+                return false;
+        }
+
+        $old = $player->getArmorInventory()->getItem($index);
+        $player->getInventory()->setItemInHand($old);
+        $player->getArmorInventory()->setItem($index, $this);
+
+        return false; // because not set item
+    }
+
+    /**
+     * Returns the total enchantment protection factor this armour piece offers from all applicable protection
+     * enchantments on the item.
+     *
+     * @param EntityDamageEvent $event
+     *
+     * @return int
+     */
+    public function getEnchantmentProtectionFactor(EntityDamageEvent $event) : int{
+        $epf = 0;
+
+        foreach($this->getEnchantments() as $enchantment){
+            $type = $enchantment->getType();
+            if($type instanceof ProtectionEnchantment and $type->isApplicable($event)){
+                $epf += $type->getProtectionFactor($enchantment->getLevel());
+            }
+        }
+
+        return $epf;
+    }
 }

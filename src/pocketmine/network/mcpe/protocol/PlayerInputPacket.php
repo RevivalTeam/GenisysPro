@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -19,42 +42,35 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-
-class PlayerInputPacket extends DataPacket {
-
+class PlayerInputPacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::PLAYER_INPUT_PACKET;
 
+	/** @var float */
 	public $motionX;
+	/** @var float */
 	public $motionY;
+	/** @var bool */
 	public $unknownBool1;
+	/** @var bool */
 	public $unknownBool2;
 
-	/**
-	 *
-	 */
-	public function decode(){
+	protected function decodePayload(){
 		$this->motionX = $this->getLFloat();
 		$this->motionY = $this->getLFloat();
 		$this->unknownBool1 = $this->getBool();
 		$this->unknownBool2 = $this->getBool();
 	}
 
-	/**
-	 *
-	 */
-	public function encode(){
-
+	protected function encodePayload(){
+		$this->putLFloat($this->motionX);
+		$this->putLFloat($this->motionY);
+		$this->putBool($this->unknownBool1);
+		$this->putBool($this->unknownBool2);
 	}
-
-	/**
-	 * @return PacketName|string
-	 */
-	public function getName(){
-		return "PlayerInputPacket";
-	}
-
 }

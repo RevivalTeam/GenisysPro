@@ -1,6 +1,29 @@
 <?php
-
 /**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+/*
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,10 +37,12 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\inventory;
 
@@ -26,67 +51,69 @@ use pocketmine\event\Cancellable;
 use pocketmine\item\Item;
 use pocketmine\tile\Furnace;
 
-class FurnaceBurnEvent extends BlockEvent implements Cancellable {
+class FurnaceBurnEvent extends BlockEvent implements Cancellable{
 	public static $handlerList = null;
 
+	/** @var Furnace */
 	private $furnace;
+	/** @var Item */
 	private $fuel;
+	/** @var int */
 	private $burnTime;
+	/** @var bool */
 	private $burning = true;
 
 	/**
-	 * FurnaceBurnEvent constructor.
-	 *
 	 * @param Furnace $furnace
-	 * @param Item    $fuel
-	 * @param         $burnTime
+	 * @param Item $fuel
+	 * @param int $burnTime
 	 */
-	public function __construct(Furnace $furnace, Item $fuel, $burnTime){
+	public function __construct(Furnace $furnace, Item $fuel, int $burnTime){
 		parent::__construct($furnace->getBlock());
 		$this->fuel = $fuel;
-		$this->burnTime = (int) $burnTime;
+		$this->burnTime = $burnTime;
 		$this->furnace = $furnace;
 	}
 
 	/**
 	 * @return Furnace
 	 */
-	public function getFurnace(){
+	public function getFurnace() : Furnace{
 		return $this->furnace;
 	}
 
 	/**
 	 * @return Item
 	 */
-	public function getFuel(){
+	public function getFuel() : Item{
 		return $this->fuel;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getBurnTime(){
+	public function getBurnTime() : int{
 		return $this->burnTime;
 	}
 
 	/**
 	 * @param int $burnTime
 	 */
-	public function setBurnTime($burnTime){
-		$this->burnTime = (int) $burnTime;
+	public function setBurnTime(int $burnTime){
+		$this->burnTime = $burnTime;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isBurning(){
+	public function isBurning() : bool{
 		return $this->burning;
 	}
 
 	/**
 	 * @param bool $burning
 	 */
-	public function setBurning($burning){
-		$this->burning = (bool) $burning;
+	public function setBurning(bool $burning){
+		$this->burning = $burning;
 	}
 }

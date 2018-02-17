@@ -1,80 +1,57 @@
 <?php
-
-/*
+/**
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
  *
  */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
 use pocketmine\event\block\BlockGrowEvent;
 use pocketmine\item\Item;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
 
 class CocoaBlock extends Solid {
 
 	protected $id = self::COCOA_BLOCK;
+	protected $itemId = Item::DYE;
 
-	/**
-	 * CocoaBlock constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Cocoa Block";
 	}
 
-	/**
-	 * @return float
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.2;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getResistance(){
-		return 15;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function canBeActivated() : bool{
-		return true;
-	}
-
-	/**
-	 * @param Item        $item
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Item $item, Player $player = null){
+	public function onActivate(Item $item, Player $player = null) : bool{
 		if($item->getId() === Item::DYE and $item->getDamage() === 0x0F){
 			$block = clone $this;
 			if($block->meta > 7){
@@ -91,12 +68,7 @@ class CocoaBlock extends Solid {
 		return false;
 	}
 
-	/**
-	 * @param int $type
-	 *
-	 * @return bool|int
-	 */
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			$faces = [3, 4, 2, 5, 3, 4, 2, 5, 3, 4, 2, 5];
 			if($this->getSide($faces[$this->meta])->isTransparent() === true){
@@ -122,20 +94,8 @@ class CocoaBlock extends Solid {
 		return false;
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		if($target->getId() === Block::WOOD and $target->getDamage() === 3){
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+		if($blockClicked->getId() === Block::WOOD and $blockClicked->getDamage() === 3){
 			if($face !== 0 and $face !== 1){
 				$faces = [
 					2 => 0,
@@ -144,25 +104,32 @@ class CocoaBlock extends Solid {
 					5 => 1,
 				];
 				$this->meta = $faces[$face];
-				$this->getLevel()->setBlock($block, Block::get(Item::COCOA_BLOCK, $this->meta), true);
+				$this->getLevel()->setBlock($blockReplace, BlockFactory::get(Item::COCOA_BLOCK, $this->meta), true);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		$drops = [];
+	public function getDropsForCompatibleTool(Item $item) : array{
 		if($this->meta >= 8){
-			$drops[] = [Item::DYE, 3, 3];
-		}else{
-			$drops[] = [Item::DYE, 3, 1];
+			return [
+			    Item::get($this->getItemId(), $this->getVariant(), 3)
+            ];
 		}
-		return $drops;
+
+		return parent::getDropsForCompatibleTool($item);
 	}
+
+    public function isAffectedBySilkTouch(): bool{
+        return false;
+    }
+
+	public function getVariant(): int{
+        return 3;
+    }
+
+    public function ticksRandomly(): bool{
+        return true;
+    }
 }

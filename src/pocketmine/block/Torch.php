@@ -1,143 +1,103 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class Torch extends Flowable {
 
 	protected $id = self::TORCH;
 
-	/**
-	 * Torch constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getLightLevel(){
-		return 15;
+	public function getLightLevel() : int{
+		return 14;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Torch";
 	}
 
-
-	/**
-	 * @param int $type
-	 *
-	 * @return bool|int
-	 */
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
-			$below = $this->getSide(0);
-			$side = $this->getDamage();
-			$faces = [
-				1 => 4,
-				2 => 5,
-				3 => 2,
-				4 => 3,
-				5 => 0,
-				6 => 0,
-				0 => 0,
-			];
+            $below = $this->getSide(Vector3::SIDE_DOWN);
+            $side = $this->getDamage();
+            $faces = [
+                0 => Vector3::SIDE_DOWN,
+                1 => Vector3::SIDE_WEST,
+                2 => Vector3::SIDE_EAST,
+                3 => Vector3::SIDE_NORTH,
+                4 => Vector3::SIDE_SOUTH,
+                5 => Vector3::SIDE_DOWN
+            ];
 
-			if($this->getSide($faces[$side])->isTransparent() === true and
-				!($side === 0 and ($below->getId() === self::FENCE or
-						$below->getId() === self::COBBLE_WALL or
-						$below->getId() == Block::REDSTONE_LAMP or
-						$below->getId() == Block::LIT_REDSTONE_LAMP)
-				)
-			){
-				$this->getLevel()->useBreakOn($this);
+            if($this->getSide($faces[$side])->isTransparent() === true and !($side === Vector3::SIDE_DOWN and ($below->getId() === self::FENCE or $below->getId() === self::COBBLESTONE_WALL))){
+                $this->getLevel()->useBreakOn($this);
 
-				return Level::BLOCK_UPDATE_NORMAL;
-			}
+                return Level::BLOCK_UPDATE_NORMAL;
+            }
 		}
 
 		return false;
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		$below = $this->getSide(0);
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+        $below = $this->getSide(Vector3::SIDE_DOWN);
 
-		if($target->isTransparent() === false and $face !== 0){
-			$faces = [
-				1 => 5,
-				2 => 4,
-				3 => 3,
-				4 => 2,
-				5 => 1,
-			];
-			$this->meta = $faces[$face];
-			$this->getLevel()->setBlock($block, $this, true, true);
+        if($blockClicked->isTransparent() === false and $face !== Vector3::SIDE_DOWN){
+            $faces = [
+                Vector3::SIDE_UP => 5,
+                Vector3::SIDE_NORTH => 4,
+                Vector3::SIDE_SOUTH => 3,
+                Vector3::SIDE_WEST => 2,
+                Vector3::SIDE_EAST => 1
+            ];
+            $this->meta = $faces[$face];
+            $this->getLevel()->setBlock($blockReplace, $this, true, true);
 
-			return true;
-		}elseif(
-			$below->isTransparent() === false or $below->getId() === self::FENCE or
-			$below->getId() === self::COBBLE_WALL or
-			$below->getId() == Block::REDSTONE_LAMP or
-			$below->getId() == Block::LIT_REDSTONE_LAMP
-		){
-			$this->meta = 0;
-			$this->getLevel()->setBlock($block, $this, true, true);
+            return true;
+        }elseif($below->isTransparent() === false or $below->getId() === self::FENCE or $below->getId() === self::COBBLESTONE_WALL){
+            $this->meta = 0;
+            $this->getLevel()->setBlock($blockReplace, $this, true, true);
 
-			return true;
-		}
+            return true;
+        }
 
 		return false;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		return [
-			[$this->id, 0, 1],
-		];
-	}
+    public function getVariantBitmask() : int{
+        return 0;
+    }
 }

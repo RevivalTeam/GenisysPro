@@ -1,34 +1,37 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\item;
 
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
 use pocketmine\level\Level;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\DoubleTag;
-use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class SpawnEgg extends Item {
@@ -36,10 +39,9 @@ class SpawnEgg extends Item {
 	 * SpawnEgg constructor.
 	 *
 	 * @param int $meta
-	 * @param int $count
 	 */
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::SPAWN_EGG, $meta, $count, "Spawn Egg");
+	public function __construct(int $meta = 0){
+		parent::__construct(self::SPAWN_EGG, $meta, "Spawn Egg");
 	}
 
 	/**
@@ -49,51 +51,21 @@ class SpawnEgg extends Item {
 		return true;
 	}
 
-	/**
-	 * @param Level  $level
-	 * @param Player $player
-	 * @param Block  $block
-	 * @param Block  $target
-	 * @param        $face
-	 * @param        $fx
-	 * @param        $fy
-	 * @param        $fz
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Level $level, Player $player, Block $block, Block $target, $face, $fx, $fy, $fz){
-		if($target->getId() == Block::MONSTER_SPAWNER){
+	public function onActivate(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickPos) : bool{
+		if($blockReplace->getId() == Block::MONSTER_SPAWNER){
 			return true;
 		}else{
-			$nbt = new CompoundTag("", [
-				"Pos" => new ListTag("Pos", [
-					new DoubleTag("", $block->getX() + 0.5),
-					new DoubleTag("", $block->getY()),
-					new DoubleTag("", $block->getZ() + 0.5)
-				]),
-				"Motion" => new ListTag("Motion", [
-					new DoubleTag("", 0),
-					new DoubleTag("", 0),
-					new DoubleTag("", 0)
-				]),
-				"Rotation" => new ListTag("Rotation", [
-					new FloatTag("", lcg_value() * 360),
-					new FloatTag("", 0)
-				]),
-			]);
+            $nbt = Entity::createBaseNBT($blockReplace->add(0.5, 0, 0.5), null, lcg_value() * 360, 0);
 
 			if($this->hasCustomName()){
-				$nbt->CustomName = new StringTag("CustomName", $this->getCustomName());
+				$nbt->setString("CustomName", $this->getCustomName());
 			}
 
-			$entity = Entity::createEntity($this->meta, $level, $nbt);
+			$entity = Entity::createEntity($this->meta, $player->getLevel(), $nbt);
 
 			if($entity instanceof Entity){
-				if($player->isSurvival()){
-					--$this->count;
-				}
+                --$this->count;
 				$entity->spawnToAll();
-
 				return true;
 			}
 

@@ -1,40 +1,43 @@
 <?php
 
-/*
+/**
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
  *
  */
+
+declare(strict_types=1);
 
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\event\TranslationContainer;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\level\format\io\region\McRegion;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
-class ChunkInfoCommand extends VanillaCommand {
-	/**
-	 * ChunkInfoCommand constructor.
-	 *
-	 * @param $name
-	 */
+class ChunkInfoCommand extends VanillaCommand{
+
 	public function __construct($name){
 		parent::__construct(
 			$name,
@@ -44,22 +47,13 @@ class ChunkInfoCommand extends VanillaCommand {
 		$this->setPermission("pocketmine.command.chunkinfo");
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string        $commandLabel
-	 * @param array         $args
-	 *
-	 * @return bool
-	 */
-	public function execute(CommandSender $sender, $commandLabel, array $args){
-		if(!$this->testPermission($sender)){
+	public function execute(CommandSender $sender, string $commandLabel, array $args){
+		if(!$this->canExecute($sender)){
 			return true;
 		}
 
 		if(!$sender instanceof Player and count($args) < 4){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
-			return false;
+            throw new InvalidCommandSyntaxException();
 		}
 
 		if($sender instanceof Player and count($args) < 4){

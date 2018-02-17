@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -22,6 +45,7 @@
 namespace pocketmine\scheduler;
 
 use pocketmine\event\Timings;
+use pocketmine\utils\MainLogger;
 
 class TaskHandler {
 
@@ -132,12 +156,17 @@ class TaskHandler {
 	 * WARNING: Do not use this, it's only for internal use.
 	 * Changes to this function won't be recorded on the version.
 	 */
-	public function cancel(){
-		if(!$this->isCancelled()){
-			$this->task->onCancel();
-		}
-		$this->remove();
-	}
+    public function cancel(){
+        try{
+            if(!$this->isCancelled()){
+                $this->task->onCancel();
+            }
+        }catch(\Throwable $e){
+            MainLogger::getLogger()->logException($e);
+        }finally{
+            $this->remove();
+        }
+    }
 
 	public function remove(){
 		$this->cancelled = true;

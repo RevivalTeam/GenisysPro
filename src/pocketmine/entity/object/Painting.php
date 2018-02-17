@@ -1,0 +1,91 @@
+<?php
+
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
+
+namespace pocketmine\entity\object;
+
+use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
+use pocketmine\entity\Hanging;
+use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\item\Item as ItemItem;
+use pocketmine\level\particle\DestroyBlockParticle;
+use pocketmine\network\mcpe\protocol\AddPaintingPacket;
+use pocketmine\Player;
+
+class Painting extends Hanging {
+	const NETWORK_ID = self::PAINTING;
+
+	const TAG_MOTIVE = "Motive";
+
+	/** @var int */
+	private $motive;
+
+	public function initEntity(){
+		$this->setMaxHealth(1);
+		parent::initEntity();
+
+		if($this->namedtag->hasTag(self::TAG_MOTIVE)){
+			$this->motive = $this->namedtag->getString(self::TAG_MOTIVE);
+		}else $this->close();
+	}
+
+    /**
+     * @param EntityDamageEvent $source
+     * @return bool
+     * @internal param float $damage
+     */
+	public function attack(EntityDamageEvent $source){
+		parent::attack($source);
+		if($source->isCancelled()) return false;
+		$this->level->addParticle(new DestroyBlockParticle($this->add(0.5), BlockFactory::get(Block::LADDER)));
+		$this->kill();
+		return true;
+	}
+
+	protected function sendSpawnPacket(Player $player){
+        $pk = new AddPaintingPacket();
+        $pk->entityRuntimeId = $this->getId();
+        $pk->x = (int) $this->x;
+        $pk->y = (int) $this->y;
+        $pk->z = (int) $this->z;
+        $pk->direction = $this->getDirection();
+        $pk->title = $this->motive;
+        $player->dataPacket($pk);
+    }
+
+    protected function updateMovement(){
+		//Nothing to update, paintings cannot move.
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getDrops(){
+		return [ItemItem::get(ItemItem::PAINTING, 0, 1)];
+	}
+}

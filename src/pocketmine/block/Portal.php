@@ -1,28 +1,35 @@
 <?php
 
-/*
+/**
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
  *
  */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
+use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
@@ -33,64 +40,38 @@ class Portal extends Transparent {
 	/** @var  Vector3 */
 	private $temporalVector = null;
 
-	/**
-	 * Portal constructor.
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 		if($this->temporalVector === null){
 			$this->temporalVector = new Vector3(0, 0, 0);
 		}
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Portal";
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return -1;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getResistance(){
+	public function getBlastResistance() : float{
 		return 0;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canPassThrough(){
+	public function canPassThrough() : bool{
 		return true;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function hasEntityCollision(){
+	public function hasEntityCollision() : bool{
 		return true;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return mixed|void
-	 */
-	public function onBreak(Item $item){
+	public function onBreak(Item $item, Player $player = null) : bool{
 		$block = $this;
 		if($this->getLevel()->getBlock($this->temporalVector->setComponents($block->x - 1, $block->y, $block->z))->getId() == Block::PORTAL or
 			$this->getLevel()->getBlock($this->temporalVector->setComponents($block->x + 1, $block->y, $block->z))->getId() == Block::PORTAL
@@ -129,36 +110,31 @@ class Portal extends Transparent {
 				}
 			}
 		}
-		parent::onBreak($item);
+
+		return parent::onBreak($item);
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
 		if($player instanceof Player){
 			$this->meta = $player->getDirection() & 0x01;
 		}
-		$this->getLevel()->setBlock($block, $this, true, true);
+		$this->getLevel()->setBlock($blockReplace, $this, true, true);
 
 		return true;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
 	public function getDrops(Item $item) : array{
 		return [];
 	}
+
+    protected function recalculateBoundingBox(){
+        return new AxisAlignedBB(
+            $this->x,
+            $this->y,
+            $this->z,
+            $this->x + 1,
+            $this->y + 1,
+            $this->z + 1
+        );
+    }
 }

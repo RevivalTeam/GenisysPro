@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -19,38 +42,30 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-
-class ServerToClientHandshakePacket extends DataPacket {
+class ServerToClientHandshakePacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::SERVER_TO_CLIENT_HANDSHAKE_PACKET;
 
-	public $publicKey;
-	public $serverToken;
-
 	/**
-	 * @return bool
+	 * @var string
+	 * Server pubkey and token is contained in the JWT.
 	 */
+	public $jwt;
+
 	public function canBeSentBeforeLogin() : bool{
 		return true;
 	}
 
-	/**
-	 *
-	 */
-	public function decode(){
-		$this->publicKey = $this->getString();
-		$this->serverToken = $this->getString();
+	protected function decodePayload(){
+		$this->jwt = $this->getString();
 	}
 
-	/**
-	 *
-	 */
-	public function encode(){
-		$this->reset();
-		$this->putString($this->publicKey);
-		$this->putString($this->serverToken);
+	protected function encodePayload(){
+		$this->putString($this->jwt);
 	}
 }

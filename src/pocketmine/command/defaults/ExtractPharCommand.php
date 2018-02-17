@@ -1,8 +1,33 @@
 <?php
 
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\utils\TextFormat;
 
 class ExtractPharCommand extends VanillaCommand {
@@ -19,6 +44,8 @@ class ExtractPharCommand extends VanillaCommand {
 			"/extractphar <Phar file Name>"
 		);
 		$this->setPermission("pocketmine.command.extractphar");
+
+        $this->getOverload("default")->setParameter(0, new CommandParameter("plugin", CommandParameter::TYPE_STRING, false));
 	}
 
 	/**
@@ -28,7 +55,7 @@ class ExtractPharCommand extends VanillaCommand {
 	 *
 	 * @return bool
 	 */
-	public function execute(CommandSender $sender, $commandLabel, array $args){
+	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(!$this->testPermission($sender)){
 			return false;
 		}
@@ -38,7 +65,7 @@ class ExtractPharCommand extends VanillaCommand {
 			return true;
 		}
 		if(!isset($args[0]) or !file_exists($args[0])) return \false;
-		$folderPath = $sender->getServer()->getPluginPath() . DIRECTORY_SEPARATOR . "GenisysPro" . DIRECTORY_SEPARATOR . basename($args[0]);
+		$folderPath = $sender->getServer()->getPluginPath() . DIRECTORY_SEPARATOR . "Turanic" . DIRECTORY_SEPARATOR . basename($args[0]);
 		if(file_exists($folderPath)){
 			$sender->sendMessage("Phar already exists, overwriting...");
 		}else{

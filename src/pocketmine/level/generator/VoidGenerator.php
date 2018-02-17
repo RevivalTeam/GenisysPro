@@ -1,21 +1,26 @@
 <?php
 
-/*
+/**
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
  *
  */
 
@@ -28,6 +33,7 @@ use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
 
 class VoidGenerator extends Generator {
+
 	/** @var ChunkManager */
 	private $level;
 	/** @var Chunk */
@@ -41,14 +47,14 @@ class VoidGenerator extends Generator {
 	/**
 	 * @return array
 	 */
-	public function getSettings(){
+    public function getSettings() : array{
 		return [];
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getName(){
+	public function getName(): string {
 		return "Void";
 	}
 
@@ -78,7 +84,7 @@ class VoidGenerator extends Generator {
 	 *
 	 * @return mixed|void
 	 */
-	public function generateChunk($chunkX, $chunkZ){
+	public function generateChunk(int $chunkX, int $chunkZ){
 		if($this->emptyChunk === null){
 			$this->chunk = clone $this->level->getChunk($chunkX, $chunkZ);
 			$this->chunk->setGenerated();
@@ -108,21 +114,13 @@ class VoidGenerator extends Generator {
 		$this->level->setChunk($chunkX, $chunkZ, $chunk);
 	}
 
-	/**
-	 * @param $chunkX
-	 * @param $chunkZ
-	 *
-	 * @return mixed|void
-	 */
-	public function populateChunk($chunkX, $chunkZ){
-
+    public function populateChunk(int $chunkX, int $chunkZ){
 	}
 
 	/**
 	 * @return Vector3
 	 */
-	public function getSpawn(){
-		return new Vector3(128, 72, 128);
+	public function getSpawn() : Vector3{
+		return new Vector3(0, 68, 0);
 	}
-
 }

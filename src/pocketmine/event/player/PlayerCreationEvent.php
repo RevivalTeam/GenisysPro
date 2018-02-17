@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -14,10 +37,12 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\player;
 
@@ -28,7 +53,7 @@ use pocketmine\Player;
 /**
  * Allows the creation of players overriding the base Player class
  */
-class PlayerCreationEvent extends Event {
+class PlayerCreationEvent extends Event{
 	public static $handlerList = null;
 
 	/** @var SourceInterface */
@@ -47,13 +72,13 @@ class PlayerCreationEvent extends Event {
 
 	/**
 	 * @param SourceInterface $interface
-	 * @param                 Player ::class   $baseClass
-	 * @param                 Player ::class   $playerClass
+	 * @param Player::class   $baseClass
+	 * @param Player::class   $playerClass
 	 * @param mixed           $clientId
 	 * @param string          $address
 	 * @param int             $port
 	 */
-	public function __construct(SourceInterface $interface, $baseClass, $playerClass, $clientId, $address, $port){
+	public function __construct(SourceInterface $interface, $baseClass, $playerClass, $clientId, string $address, int $port){
 		$this->interface = $interface;
 		$this->clientId = $clientId;
 		$this->address = $address;
@@ -75,21 +100,21 @@ class PlayerCreationEvent extends Event {
 	/**
 	 * @return SourceInterface
 	 */
-	public function getInterface(){
+	public function getInterface() : SourceInterface{
 		return $this->interface;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getAddress(){
+	public function getAddress() : string{
 		return $this->address;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getPort(){
+	public function getPort() : int{
 		return $this->port;
 	}
 
@@ -108,7 +133,7 @@ class PlayerCreationEvent extends Event {
 	}
 
 	/**
-	 * @param Player ::class $class
+	 * @param Player::class $class
 	 */
 	public function setBaseClass($class){
 		if(!is_a($class, $this->baseClass, true)){
@@ -126,7 +151,7 @@ class PlayerCreationEvent extends Event {
 	}
 
 	/**
-	 * @param Player ::class $class
+	 * @param Player::class $class
 	 */
 	public function setPlayerClass($class){
 		if(!is_a($class, $this->baseClass, true)){

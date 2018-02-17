@@ -1,54 +1,50 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class WoodSlab extends Transparent {
 
 	protected $id = self::WOOD_SLAB;
 
-	/**
-	 * WoodSlab constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 2;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		static $names = [
 			0 => "Oak",
@@ -56,18 +52,12 @@ class WoodSlab extends Transparent {
 			2 => "Birch",
 			3 => "Jungle",
 			4 => "Acacia",
-			5 => "Dark Oak",
-			6 => "",
-			7 => ""
+			5 => "Dark Oak"
 		];
-		return (($this->meta & 0x08) === 0x08 ? "Upper " : "") . $names[$this->meta & 0x07] . " Wooden Slab";
+		return (($this->meta & 0x08) === 0x08 ? "Upper " : "") . ($names[$this->getVariant()] ?? "") . " Wooden Slab";
 	}
 
-	/**
-	 * @return AxisAlignedBB
-	 */
 	protected function recalculateBoundingBox(){
-
 		if(($this->meta & 0x08) > 0){
 			return new AxisAlignedBB(
 				$this->x,
@@ -89,81 +79,63 @@ class WoodSlab extends Transparent {
 		}
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
 		$this->meta &= 0x07;
 		if($face === 0){
-			if($target->getId() === self::WOOD_SLAB and ($target->getDamage() & 0x08) === 0x08 and ($target->getDamage() & 0x07) === ($this->meta & 0x07)){
-				$this->getLevel()->setBlock($target, Block::get(Item::DOUBLE_WOOD_SLAB, $this->meta), true);
+            if($blockClicked->getId() === $this->id and ($blockClicked->getDamage() & 0x08) === 0x08 and $blockClicked->getVariant() === $this->getVariant()){
+                $this->getLevel()->setBlock($blockClicked, BlockFactory::get(self::DOUBLE_WOODEN_SLAB, $this->getVariant()), true);
 
 				return true;
-			}elseif($block->getId() === self::WOOD_SLAB and ($block->getDamage() & 0x07) === ($this->meta & 0x07)){
-				$this->getLevel()->setBlock($block, Block::get(Item::DOUBLE_WOOD_SLAB, $this->meta), true);
+			}elseif($blockReplace->getId() === self::WOOD_SLAB and $blockReplace->getVariant() === $this->getVariant()){
+				$this->getLevel()->setBlock($blockReplace, BlockFactory::get(Item::DOUBLE_WOOD_SLAB, $this->getVariant()), true);
 
 				return true;
 			}else{
 				$this->meta |= 0x08;
 			}
 		}elseif($face === 1){
-			if($target->getId() === self::WOOD_SLAB and ($target->getDamage() & 0x08) === 0 and ($target->getDamage() & 0x07) === ($this->meta & 0x07)){
-				$this->getLevel()->setBlock($target, Block::get(Item::DOUBLE_WOOD_SLAB, $this->meta), true);
+			if($blockClicked->getId() === self::WOOD_SLAB and ($blockClicked->getDamage() & 0x08) === 0 and $blockClicked->getVariant() === $this->getVariant()){
+				$this->getLevel()->setBlock($blockClicked, BlockFactory::get(Item::DOUBLE_WOOD_SLAB, $this->getVariant()), true);
 
 				return true;
-			}elseif($block->getId() === self::WOOD_SLAB and ($block->getDamage() & 0x07) === ($this->meta & 0x07)){
-				$this->getLevel()->setBlock($block, Block::get(Item::DOUBLE_WOOD_SLAB, $this->meta), true);
+			}elseif($blockReplace->getId() === self::WOOD_SLAB and $blockReplace->getVariant() === $this->getVariant()){
+				$this->getLevel()->setBlock($blockReplace, BlockFactory::get(Item::DOUBLE_WOOD_SLAB, $this->getVariant()), true);
 
 				return true;
 			}
 		}else{ //TODO: collision
-			if($block->getId() === self::WOOD_SLAB){
-				if(($block->getDamage() & 0x07) === ($this->meta & 0x07)){
-					$this->getLevel()->setBlock($block, Block::get(Item::DOUBLE_WOOD_SLAB, $this->meta), true);
+			if($blockReplace->getId() === self::WOOD_SLAB){
+				if($blockReplace->getVariant() === $this->meta){
+					$this->getLevel()->setBlock($blockReplace, BlockFactory::get(Item::DOUBLE_WOOD_SLAB, $this->getVariant()), true);
 
 					return true;
 				}
 
 				return false;
 			}else{
-				if($fy > 0.5){
+				if($clickVector->y > 0.5){
 					$this->meta |= 0x08;
 				}
 			}
 		}
 
-		if($block->getId() === self::WOOD_SLAB and ($target->getDamage() & 0x07) !== ($this->meta & 0x07)){
+		if($blockReplace->getId() === self::WOOD_SLAB and $blockClicked->getVariant() !== $this->getVariant()){
 			return false;
 		}
-		$this->getLevel()->setBlock($block, $this, true, true);
+		$this->getLevel()->setBlock($blockReplace, $this, true, true);
 
 		return true;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_AXE;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_AXE;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		return [
-			[$this->id, $this->meta & 0x07, 1],
-		];
-	}
+	public function getVariantBitmask(): int{
+        return 0x07;
+    }
+
+    public function getFuelTime(): int{
+        return 300;
+    }
 }

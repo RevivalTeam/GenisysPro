@@ -1,33 +1,36 @@
 <?php
 
-/*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+/**
  *
  *
-*/
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\inventory;
 
 use pocketmine\item\Item;
-use pocketmine\Server;
-use pocketmine\utils\UUID;
 
-class FurnaceRecipe implements Recipe {
-
-	private $id = null;
+class FurnaceRecipe implements Recipe{
 
 	/** @var Item */
 	private $output;
@@ -45,24 +48,6 @@ class FurnaceRecipe implements Recipe {
 	}
 
 	/**
-	 * @return null
-	 */
-	public function getId(){
-		return $this->id;
-	}
-
-	/**
-	 * @param UUID $id
-	 */
-	public function setId(UUID $id){
-		if($this->id !== null){
-			throw new \InvalidStateException("Id is already set");
-		}
-
-		$this->id = $id;
-	}
-
-	/**
 	 * @param Item $item
 	 */
 	public function setInput(Item $item){
@@ -72,18 +57,18 @@ class FurnaceRecipe implements Recipe {
 	/**
 	 * @return Item
 	 */
-	public function getInput(){
+	public function getInput() : Item{
 		return clone $this->ingredient;
 	}
 
 	/**
 	 * @return Item
 	 */
-	public function getResult(){
+	public function getResult() : Item{
 		return clone $this->output;
 	}
 
-	public function registerToCraftingManager(){
-		Server::getInstance()->getCraftingManager()->registerFurnaceRecipe($this);
+	public function registerToCraftingManager(CraftingManager $manager){
+		$manager->registerFurnaceRecipe($this);
 	}
 }

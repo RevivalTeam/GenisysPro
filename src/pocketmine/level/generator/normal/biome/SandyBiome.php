@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -23,6 +46,7 @@ namespace pocketmine\level\generator\normal\biome;
 
 
 use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 use pocketmine\level\generator\populator\Cactus;
 use pocketmine\level\generator\populator\DeadBush;
 
@@ -35,7 +59,9 @@ class SandyBiome extends GrassyBiome {
 		parent::__construct();
 
 		$cactus = new Cactus();
-		$cactus->setBaseAmount(6);
+		$cactus->setBaseAmount(2);
+		$cactus->setRandomAmount(1);
+
 		$deadBush = new DeadBush();
 		$deadBush->setBaseAmount(2);
 
@@ -47,41 +73,41 @@ class SandyBiome extends GrassyBiome {
 		$this->temperature = 0.05;
 		$this->rainfall = 0.8;
 		$this->setGroundCover([
-			Block::get(Block::SAND, 0),
-			Block::get(Block::SAND, 0),
-			Block::get(Block::SAND, 0),
-			Block::get(Block::SAND, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
-			Block::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SAND, 0),
+			BlockFactory::get(Block::SAND, 0),
+			BlockFactory::get(Block::SAND, 0),
+			BlockFactory::get(Block::SAND, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
 		]);
 	}
 

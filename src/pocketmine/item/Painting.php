@@ -1,32 +1,42 @@
 <?php
-/*
- * This file is translated from the Nukkit Project
- * which is written by MagicDroidX
- * @link https://github.com/Nukkit/Nukkit
-*/
+
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\item;
 
 use pocketmine\block\Block;
-use pocketmine\entity\Painting as PaintingEntity;
-use pocketmine\level\Level;
+use pocketmine\entity\Entity;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\DoubleTag;
-use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 
 class Painting extends Item {
-	/**
-	 * Painting constructor.
-	 *
-	 * @param int $meta
-	 * @param int $count
-	 */
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::PAINTING, 0, $count, "Painting");
+
+	public function __construct(int $meta = 0){
+		parent::__construct(self::PAINTING, 0, "Painting");
 	}
 
 	/**
@@ -36,20 +46,8 @@ class Painting extends Item {
 		return true;
 	}
 
-	/**
-	 * @param Level  $level
-	 * @param Player $player
-	 * @param Block  $block
-	 * @param Block  $target
-	 * @param        $face
-	 * @param        $fx
-	 * @param        $fy
-	 * @param        $fz
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Level $level, Player $player, Block $block, Block $target, $face, $fx, $fy, $fz){
-		if($target->isTransparent() === false and $face > 1 and $block->isSolid() === false){
+	public function onActivate(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickPos) : bool{
+		if($blockClicked->isTransparent() === false and $face > 1 and $blockReplace->isSolid() === false){
 			$faces = [
 				2 => 1,
 				3 => 3,
@@ -77,7 +75,7 @@ class Painting extends Item {
 				["Stage", 2, 2],
 				["Void", 2, 2],
 				["SkullAndRoses", 2, 2],
-				//array("Wither", 2, 2),
+				["Wither", 2, 2],
 				["Fighters", 4, 2],
 				["Skeleton", 4, 3],
 				["DonkeyKong", 4, 3],
@@ -93,10 +91,10 @@ class Painting extends Item {
 				$valid = true;
 				for($x = 0; $x < $motive[1] && $valid; $x++){
 					for($z = 0; $z < $motive[2] && $valid; $z++){
-						if($target->getSide($right[$face - 2], $x)->isTransparent() ||
-							$target->getSide(Vector3::SIDE_UP, $z)->isTransparent() ||
-							$block->getSide($right[$face - 2], $x)->isSolid() ||
-							$block->getSide(Vector3::SIDE_UP, $z)->isSolid()
+						if($blockClicked->getSide($right[$face - 2], $x)->isTransparent() ||
+							$blockClicked->getSide(Vector3::SIDE_UP, $z)->isTransparent() ||
+                            $blockReplace->getSide($right[$face - 2], $x)->isSolid() ||
+                            $blockReplace->getSide(Vector3::SIDE_UP, $z)->isSolid()
 						){
 							$valid = false;
 						}
@@ -108,53 +106,15 @@ class Painting extends Item {
 				}
 			}
 
-			$motive = $motives[mt_rand(0, count($validMotives) - 1)];
-			$data = [
-				"x" => $target->x,
-				"y" => $target->y,
-				"z" => $target->z,
-				"yaw" => $faces[$face] * 90,
-				"Motive" => $motive[0],
-			];
+			$motive = $validMotives[array_rand($validMotives)];
 
-			$nbt = new CompoundTag("", [
-				"Motive" => new StringTag("Motive", $data["Motive"]),
-				"Pos" => new ListTag("Pos", [
-					new DoubleTag("", $data["x"]),
-					new DoubleTag("", $data["y"]),
-					new DoubleTag("", $data["z"])
-				]),
-				"Motion" => new ListTag("Motion", [
-					new DoubleTag("", 0),
-					new DoubleTag("", 0),
-					new DoubleTag("", 0)
-				]),
-				"Rotation" => new ListTag("Rotation", [
-					new FloatTag("", $data["yaw"]),
-					new FloatTag("", 0)
-				]),
-			]);
+            $nbt = Entity::createBaseNBT($blockClicked, null, $faces[$face] * 90);
+            $nbt->setString("Motive", $motive[0]);
 
-			$painting = new PaintingEntity($player->getLevel(), $nbt);
-			$painting->spawnToAll();
+			$painting = Entity::createEntity("Painting", $player->getLevel(), $nbt);
+			if($painting != null) $painting->spawnToAll();
 
-			if($player->isSurvival()){
-				$item = $player->getInventory()->getItemInHand();
-				$count = $item->getCount();
-				if(--$count <= 0){
-					$player->getInventory()->setItemInHand(Item::get(Item::AIR));
-					return true;
-				}
-
-				$item->setCount($count);
-				$player->getInventory()->setItemInHand($item);
-			}
-			//TODO
-			//$e = $server->api->entity->add($level, ENTITY_OBJECT, OBJECT_PAINTING, $data);
-			//$e->spawnToAll();
-			/*if(($player->gamemode & 0x01) === 0x00){
-				$player->removeItem(Item::get($this->getId(), $this->getDamage(), 1));
-			}*/
+            $this->count--;
 
 			return true;
 		}

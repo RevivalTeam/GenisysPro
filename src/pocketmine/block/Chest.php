@@ -1,112 +1,79 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
-/*
- *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
- *
-*/
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
-use pocketmine\nbt\NBT;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ListTag;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\tile\Chest as TileChest;
 use pocketmine\tile\Tile;
 
-class Chest extends Transparent {
+class Chest extends Transparent{
 
 	protected $id = self::CHEST;
 
-	/**
-	 * Chest constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canBeActivated() : bool{
-		return true;
-	}
-
-	/**
-	 * @return float
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 2.5;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "Chest";
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_AXE;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_AXE;
 	}
 
-	/**
-	 * @return AxisAlignedBB
-	 */
 	protected function recalculateBoundingBox(){
-		return new AxisAlignedBB(
-			$this->x + 0.0625,
-			$this->y,
-			$this->z + 0.0625,
-			$this->x + 0.9375,
-			$this->y + 0.9475,
-			$this->z + 0.9375
-		);
+        //these are slightly bigger than in PC
+        return new AxisAlignedBB(
+            $this->x + 0.025,
+            $this->y,
+            $this->z + 0.025,
+            $this->x + 0.975,
+            $this->y + 0.95,
+            $this->z + 0.975
+        );
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		$faces = [
-			0 => 4,
-			1 => 2,
-			2 => 5,
-			3 => 3,
-		];
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+        $faces = [
+            0 => 4,
+            1 => 2,
+            2 => 5,
+            3 => 3
+        ];
 
 		$chest = null;
 		$this->meta = $faces[$player instanceof Player ? $player->getDirection() : 0];
@@ -118,36 +85,17 @@ class Chest extends Transparent {
 				continue;
 			}
 			$c = $this->getSide($side);
-			if($c instanceof Chest and $c->getDamage() === $this->meta){
-				$tile = $this->getLevel()->getTile($c);
-				if($tile instanceof TileChest and !$tile->isPaired()){
-					$chest = $tile;
-					break;
-				}
-			}
+            if($c->getId() === $this->id and $c->getDamage() === $this->meta){
+                $tile = $this->getLevel()->getTile($c);
+                if($tile instanceof TileChest and !$tile->isPaired()){
+                    $chest = $tile;
+                    break;
+                }
+            }
 		}
 
-		$this->getLevel()->setBlock($block, $this, true, true);
-		$nbt = new CompoundTag("", [
-			new ListTag("Items", []),
-			new StringTag("id", Tile::CHEST),
-			new IntTag("x", $this->x),
-			new IntTag("y", $this->y),
-			new IntTag("z", $this->z)
-		]);
-		$nbt->Items->setTagType(NBT::TAG_Compound);
-
-		if($item->hasCustomName()){
-			$nbt->CustomName = new StringTag("CustomName", $item->getCustomName());
-		}
-
-		if($item->hasCustomBlockData()){
-			foreach($item->getCustomBlockData() as $key => $v){
-				$nbt->{$key} = $v;
-			}
-		}
-
-		$tile = Tile::createTile("Chest", $this->getLevel(), $nbt);
+		$this->getLevel()->setBlock($blockReplace, $this, true, true);
+        $tile = Tile::createTile(Tile::CHEST, $this->getLevel(), TileChest::createNBT($this, $face, $item, $player));
 
 		if($chest instanceof TileChest and $tile instanceof TileChest){
 			$chest->pairWith($tile);
@@ -157,73 +105,46 @@ class Chest extends Transparent {
 		return true;
 	}
 
-	/**
-	 * @param Item $item
-	 *
-	 * @return bool
-	 */
-	public function onBreak(Item $item){
-		$t = $this->getLevel()->getTile($this);
-		if($t instanceof TileChest){
-			$t->unpair();
-		}
-		$this->getLevel()->setBlock($this, new Air(), true, true);
+	public function onBreak(Item $item, Player $player = null): bool{
+        $t = $this->getLevel()->getTile($this);
+        if($t instanceof TileChest){
+            $t->unpair();
+        }
+        $this->getLevel()->setBlock($this, Block::get(Block::AIR), true, true);
 
-		return true;
+        return true;
+    }
+
+    public function onActivate(Item $item, Player $player = null) : bool{
+        if($player instanceof Player){
+            $t = $this->getLevel()->getTile($this);
+            $chest = null;
+            if($t instanceof TileChest){
+                $chest = $t;
+            }else{
+                $chest = Tile::createTile(Tile::CHEST, $this->getLevel(), TileChest::createNBT($this));
+            }
+
+            if(
+                !$this->getSide(Vector3::SIDE_UP)->isTransparent() or
+                ($chest->isPaired() and !$chest->getPair()->getBlock()->getSide(Vector3::SIDE_UP)->isTransparent()) or
+                ($chest->namedtag->hasTag("Lock", StringTag::class) and $chest->namedtag->getString("Lock") !== $item->getCustomName())
+            ){
+                return true;
+            }
+
+            $player->addWindow($chest->getInventory());
+        }
+
+        return true;
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Item $item, Player $player = null){
-		if($player instanceof Player){
-			$top = $this->getSide(1);
-			if($top->isTransparent() !== true){
-				return true;
-			}
+    public function getVariantBitmask() : int{
+        return 0;
+    }
 
-			$t = $this->getLevel()->getTile($this);
-			$chest = null;
-			if($t instanceof TileChest){
-				$chest = $t;
-			}else{
-				$nbt = new CompoundTag("", [
-					new ListTag("Items", []),
-					new StringTag("id", Tile::CHEST),
-					new IntTag("x", $this->x),
-					new IntTag("y", $this->y),
-					new IntTag("z", $this->z)
-				]);
-				$nbt->Items->setTagType(NBT::TAG_Compound);
-				$chest = Tile::createTile("Chest", $this->getLevel(), $nbt);
-			}
+	public function getFuelTime() : int{
+        return 300;
+    }
 
-			if(isset($chest->namedtag->Lock) and $chest->namedtag->Lock instanceof StringTag){
-				if($chest->namedtag->Lock->getValue() !== $item->getCustomName()){
-					return true;
-				}
-			}
-
-			if($player->isCreative() and $player->getServer()->limitedCreative){
-				return true;
-			}
-			$player->addWindow($chest->getInventory());
-		}
-
-		return true;
-	}
-
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		return [
-			[$this->id, 0, 1],
-		];
-	}
 }

@@ -1,26 +1,29 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
-/*
- *
- *  _____            _               _____           
- * / ____|          (_)             |  __ \          
- *| |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___  
- *| | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \ 
- *| |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
- * \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/ 
- *                         __/ |                    
- *                        |___/                     
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * @author GenisysPro
- * @link https://github.com/GenisysPro/GenisysPro
- *
- *
-*/
+declare(strict_types=1);
 
 /**
  * All Block classes are in here
@@ -28,460 +31,674 @@
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
-
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
 use pocketmine\level\Level;
-use pocketmine\level\MovingObjectPosition;
 use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\RayTraceResult;
 use pocketmine\math\Vector3;
 use pocketmine\metadata\Metadatable;
 use pocketmine\metadata\MetadataValue;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 
-class Block extends Position implements BlockIds, Metadatable{	
+class Block extends Position implements BlockIds, Metadatable{
 
-	/** @var \SplFixedArray */
-	public static $list = null;
-	/** @var \SplFixedArray */
-	public static $fullList = null;
+    /**
+     * Returns a new Block instance with the specified ID, meta and position.
+     *
+     * This function redirects to {@link BlockFactory#get}.
+     *
+     * @param int           $id
+     * @param int           $meta
+     * @param Position|null $pos
+     *
+     * @return Block
+     */
+    public static function get(int $id, int $meta = 0, Position $pos = null) : Block{
+        return BlockFactory::get($id, $meta, $pos);
+    }
 
-	/** @var \SplFixedArray */
-	public static $light = null;
-	/** @var \SplFixedArray */
-	public static $lightFilter = null;
-	/** @var \SplFixedArray */
-	public static $solid = null;
-	/** @var \SplFixedArray */
-	public static $hardness = null;
-	/** @var \SplFixedArray */
-	public static $transparent = null;
-    /** @var \SplFixedArray */
-    public static $diffusesSkyLight = null;
+    /** @var int */
+    protected $id;
+    /** @var int */
+    protected $meta = 0;
+    /** @var string|null */
+    protected $fallbackName;
+    /** @var int|null */
+    protected $itemId;
 
-	protected $id;
-	protected $meta = 0;
+    /** @var AxisAlignedBB */
+    protected $boundingBox = null;
 
-	/** @var AxisAlignedBB */
-	public $boundingBox = null;
+    /** @var AxisAlignedBB[]|null */
+    protected $collisionBoxes = null;
 
-	public static function init(){
-		if(self::$list === null){
-			self::$list = new \SplFixedArray(256);
-			self::$fullList = new \SplFixedArray(4096);
-			self::$light = new \SplFixedArray(256);
-			self::$lightFilter = new \SplFixedArray(256);
-			self::$solid = new \SplFixedArray(256);
-			self::$hardness = new \SplFixedArray(256);
-			self::$transparent = new \SplFixedArray(256);
-            self::$diffusesSkyLight = new \SplFixedArray(256);
-			self::$list[self::AIR] = Air::class;
-			self::$list[self::STONE] = Stone::class;
-			self::$list[self::GRASS] = Grass::class;
-			self::$list[self::DIRT] = Dirt::class;
-			self::$list[self::COBBLESTONE] = Cobblestone::class;
-			self::$list[self::PLANKS] = Planks::class;
-			self::$list[self::SAPLING] = Sapling::class;
-			self::$list[self::BEDROCK] = Bedrock::class;
-			self::$list[self::WATER] = Water::class;
-			self::$list[self::STILL_WATER] = StillWater::class;
-			self::$list[self::LAVA] = Lava::class;
-			self::$list[self::STILL_LAVA] = StillLava::class;
-			self::$list[self::SAND] = Sand::class;
-			self::$list[self::GRAVEL] = Gravel::class;
-			self::$list[self::GOLD_ORE] = GoldOre::class;
-			self::$list[self::IRON_ORE] = IronOre::class;
-			self::$list[self::COAL_ORE] = CoalOre::class;
-			self::$list[self::WOOD] = Wood::class;
-			self::$list[self::LEAVES] = Leaves::class;
-			self::$list[self::SPONGE] = Sponge::class;
-			self::$list[self::GLASS] = Glass::class;
-			self::$list[self::LAPIS_ORE] = LapisOre::class;
-			self::$list[self::LAPIS_BLOCK] = Lapis::class;
-			self::$list[self::SANDSTONE] = Sandstone::class;
-			self::$list[self::RED_SANDSTONE] = RedSandstone::class;
-			self::$list[self::RED_SANDSTONE_STAIRS] = RedSandstoneStairs::class;
-			self::$list[self::BED_BLOCK] = Bed::class;
-			self::$list[self::COBWEB] = Cobweb::class;
-			self::$list[self::TALL_GRASS] = TallGrass::class;
-			self::$list[self::DEAD_BUSH] = DeadBush::class;
-			self::$list[self::WOOL] = Wool::class;
-			self::$list[self::DANDELION] = Dandelion::class;
-			self::$list[self::RED_FLOWER] = Flower::class;
-			self::$list[self::BROWN_MUSHROOM] = BrownMushroom::class;
-			self::$list[self::RED_MUSHROOM] = RedMushroom::class;
-			self::$list[self::GOLD_BLOCK] = Gold::class;
-			self::$list[self::IRON_BLOCK] = Iron::class;
-			self::$list[self::DOUBLE_SLAB] = DoubleSlab::class;
-			self::$list[self::SLAB] = Slab::class;
-			self::$list[self::RED_SANDSTONE_SLAB] = RedSandstoneSlab::class;
-			self::$list[self::DOUBLE_RED_SANDSTONE_SLAB] = DoubleRedSandstoneSlab::class;
-			self::$list[self::BRICKS_BLOCK] = Bricks::class;
-			self::$list[self::TNT] = TNT::class;
-			self::$list[self::BOOKSHELF] = Bookshelf::class;
-			self::$list[self::MOSS_STONE] = MossStone::class;
-			self::$list[self::OBSIDIAN] = Obsidian::class;
-			self::$list[self::TORCH] = Torch::class;
-			self::$list[self::FIRE] = Fire::class;
-			self::$list[self::MONSTER_SPAWNER] = MonsterSpawner::class;
-			self::$list[self::WOOD_STAIRS] = WoodStairs::class;
-			self::$list[self::ENDER_CHEST] = EnderChest::class;
-			self::$list[self::CHEST] = Chest::class;
-
-			self::$list[self::DIAMOND_ORE] = DiamondOre::class;
-			self::$list[self::DIAMOND_BLOCK] = Diamond::class;
-			self::$list[self::WORKBENCH] = Workbench::class;
-			self::$list[self::WHEAT_BLOCK] = Wheat::class;
-			self::$list[self::FARMLAND] = Farmland::class;
-			self::$list[self::FURNACE] = Furnace::class;
-			self::$list[self::BURNING_FURNACE] = BurningFurnace::class;
-			self::$list[self::SIGN_POST] = SignPost::class;
-			self::$list[self::WOOD_DOOR_BLOCK] = WoodDoor::class;
-			self::$list[self::SPRUCE_DOOR_BLOCK] = SpruceDoor::class;
-			self::$list[self::BIRCH_DOOR_BLOCK] = BirchDoor::class;
-			self::$list[self::JUNGLE_DOOR_BLOCK] = JungleDoor::class;
-			self::$list[self::ACACIA_DOOR_BLOCK] = AcaciaDoor::class;
-			self::$list[self::DARK_OAK_DOOR_BLOCK] = DarkOakDoor::class;
-			self::$list[self::LADDER] = Ladder::class;
-
-			self::$list[self::COBBLESTONE_STAIRS] = CobblestoneStairs::class;
-			self::$list[self::WALL_SIGN] = WallSign::class;
-
-			self::$list[self::IRON_DOOR_BLOCK] = IronDoor::class;
-			self::$list[self::REDSTONE_ORE] = RedstoneOre::class;
-			self::$list[self::GLOWING_REDSTONE_ORE] = GlowingRedstoneOre::class;
-
-			self::$list[self::SNOW_LAYER] = SnowLayer::class;
-			self::$list[self::ICE] = Ice::class;
-			self::$list[self::SNOW_BLOCK] = Snow::class;
-			self::$list[self::CACTUS] = Cactus::class;
-			self::$list[self::CLAY_BLOCK] = Clay::class;
-			self::$list[self::SUGARCANE_BLOCK] = Sugarcane::class;
-
-			self::$list[self::FENCE] = Fence::class;
-			self::$list[self::PUMPKIN] = Pumpkin::class;
-			self::$list[self::NETHERRACK] = Netherrack::class;
-			self::$list[self::SOUL_SAND] = SoulSand::class;
-			self::$list[self::GLOWSTONE_BLOCK] = Glowstone::class;
-
-			self::$list[self::LIT_PUMPKIN] = LitPumpkin::class;
-			self::$list[self::CAKE_BLOCK] = Cake::class;
-
-			self::$list[self::TRAPDOOR] = Trapdoor::class;
-			self::$list[self::IRON_TRAPDOOR] = IronTrapdoor::class;
-
-			self::$list[self::STONE_BRICKS] = StoneBricks::class;
-			
-			self::$list[self::BROWN_MUSHROOM_BLOCK] = BrownMushroomBlock::class;
-			self::$list[self::RED_MUSHROOM_BLOCK] = RedMushroomBlock::class;
-
-			self::$list[self::IRON_BARS] = IronBars::class;
-			self::$list[self::GLASS_PANE] = GlassPane::class;
-			self::$list[self::MELON_BLOCK] = Melon::class;
-			self::$list[self::PUMPKIN_STEM] = PumpkinStem::class;
-			self::$list[self::MELON_STEM] = MelonStem::class;
-			self::$list[self::VINE] = Vine::class;
-			self::$list[self::FENCE_GATE] = FenceGate::class;
-			self::$list[self::BRICK_STAIRS] = BrickStairs::class;
-			self::$list[self::STONE_BRICK_STAIRS] = StoneBrickStairs::class;
-
-			self::$list[self::MYCELIUM] = Mycelium::class;
-			self::$list[self::WATER_LILY] = WaterLily::class;
-			self::$list[self::NETHER_BRICKS] = NetherBrick::class;
-
-			self::$list[self::PORTAL] = Portal::class;
-			self::$list[self::NETHER_BRICKS_STAIRS] = NetherBrickStairs::class;
-			self::$list[self::NETHER_WART_BLOCK] = NetherWart::class;
-			self::$list[self::ENCHANTING_TABLE] = EnchantingTable::class;
-
-			self::$list[self::BREWING_STAND_BLOCK] = BrewingStand::class;
-			self::$list[self::END_PORTAL] = EndPortal::class;
-			self::$list[self::END_PORTAL_FRAME] = EndPortalFrame::class;
-			self::$list[self::END_STONE] = EndStone::class;
-
-			self::$list[self::END_STONE_BRICKS] = EndStoneBricks::class;
-			self::$list[self::END_ROD] = EndRod::class;
-
-			self::$list[self::PURPUR] = Purpur::class;
-			self::$list[self::PURPUR_STAIRS] = PurpurStairs::class;
-
-			self::$list[self::CHORUS_FLOWER] = ChorusFlower::class;
-			self::$list[self::CHORUS_PLANT] = ChorusPlant::class;
-
-			self::$list[self::SANDSTONE_STAIRS] = SandstoneStairs::class;
-			self::$list[self::EMERALD_ORE] = EmeraldOre::class;
-
-			self::$list[self::EMERALD_BLOCK] = Emerald::class;
-			self::$list[self::SPRUCE_WOOD_STAIRS] = SpruceWoodStairs::class;
-			self::$list[self::BIRCH_WOOD_STAIRS] = BirchWoodStairs::class;
-			self::$list[self::JUNGLE_WOOD_STAIRS] = JungleWoodStairs::class;
-			self::$list[self::BEACON] = Beacon::class;
-			self::$list[self::STONE_WALL] = StoneWall::class;
-
-			self::$list[self::FLOWER_POT_BLOCK] = FlowerPot::class;
-			self::$list[self::CARROT_BLOCK] = Carrot::class;
-			self::$list[self::POTATO_BLOCK] = Potato::class;
-			self::$list[self::ANVIL] = Anvil::class;
-
-			self::$list[self::TRAPPED_CHEST] = TrappedChest::class;
-			self::$list[self::REDSTONE_BLOCK] = Redstone::class;
-
-			self::$list[self::QUARTZ_BLOCK] = Quartz::class;
-			self::$list[self::QUARTZ_STAIRS] = QuartzStairs::class;
-			self::$list[self::DOUBLE_WOOD_SLAB] = DoubleWoodSlab::class;
-			self::$list[self::WOOD_SLAB] = WoodSlab::class;
-			self::$list[self::STAINED_CLAY] = StainedClay::class;
-
-			self::$list[self::LEAVES2] = Leaves2::class;
-			self::$list[self::WOOD2] = Wood2::class;
-			self::$list[self::ACACIA_WOOD_STAIRS] = AcaciaWoodStairs::class;
-			self::$list[self::DARK_OAK_WOOD_STAIRS] = DarkOakWoodStairs::class;
-
-			self::$list[self::SLIME_BLOCK] = SlimeBlock::class;
-			self::$list[self::PRISMARINE] = Prismarine::class;
-			self::$list[self::SEA_LANTERN] = SeaLantern::class;
-			self::$list[self::HAY_BALE] = HayBale::class;
-			self::$list[self::CARPET] = Carpet::class;
-			self::$list[self::HARDENED_CLAY] = HardenedClay::class;
-			self::$list[self::COAL_BLOCK] = Coal::class;
-
-			self::$list[self::PACKED_ICE] = PackedIce::class;
-			self::$list[self::DOUBLE_PLANT] = DoublePlant::class;
-
-			self::$list[self::FENCE_GATE_SPRUCE] = FenceGateSpruce::class;
-			self::$list[self::FENCE_GATE_BIRCH] = FenceGateBirch::class;
-			self::$list[self::FENCE_GATE_JUNGLE] = FenceGateJungle::class;
-			self::$list[self::FENCE_GATE_DARK_OAK] = FenceGateDarkOak::class;
-			self::$list[self::FENCE_GATE_ACACIA] = FenceGateAcacia::class;
-
-			self::$list[self::GRASS_PATH] = GrassPath::class;
-
-			self::$list[self::PODZOL] = Podzol::class;
-			self::$list[self::BEETROOT_BLOCK] = Beetroot::class;
-			self::$list[self::STONECUTTER] = Stonecutter::class;
-			self::$list[self::GLOWING_OBSIDIAN] = GlowingObsidian::class;
-			self::$list[self::NETHER_REACTOR] = NetherReactor::class;
-			self::$list[self::CONCRETE] = Concrete::class;
-			self::$list[self::CONCRETE_POWDER] = ConcretePowder::class;
-			
-			self::$list[self::BLACK_GLAZED_TERRACOTTA] = BlackGlazedTerracotta::class;
-			self::$list[self::BLUE_GLAZED_TERRACOTTA] = BlueGlazedTerracotta::class;
-			self::$list[self::BROWN_GLAZED_TERRACOTTA] = BrownGlazedTerracotta::class;
-			self::$list[self::CYAN_GLAZED_TERRACOTTA] = CyanGlazedTerracotta::class;
-			self::$list[self::GRAY_GLAZED_TERRACOTTA] = GrayGlazedTerracotta::class;
-			self::$list[self::GREEN_GLAZED_TERRACOTTA] = GreenGlazedTerracotta::class;
-			self::$list[self::LIGHT_BLUE_GLAZED_TERRACOTTA] = LightBlueGlazedTerracotta::class;
-			self::$list[self::LIME_GLAZED_TERRACOTTA] = LimeGlazedTerracotta::class;
-			self::$list[self::MAGENTA_GLAZED_TERRACOTTA] = MagentaGlazedTerracotta::class;
-			self::$list[self::ORANGE_GLAZED_TERRACOTTA] = OrangeGlazedTerracotta::class;
-			self::$list[self::PINK_GLAZED_TERRACOTTA] = PinkGlazedTerracotta::class;
-			self::$list[self::PURPLE_GLAZED_TERRACOTTA] = PurpleGlazedTerracotta::class;
-			self::$list[self::RED_GLAZED_TERRACOTTA] = RedGlazedTerracotta::class;
-			self::$list[self::SILVER_GLAZED_TERRACOTTA] = SilverGlazedTerracotta::class;
-			self::$list[self::WHITE_GLAZED_TERRACOTTA] = WhiteGlazedTerracotta::class;
-			self::$list[self::YELLOW_GLAZED_TERRACOTTA] = YellowGlazedTerracotta::class;
-			
-			self::$list[self::NETHER_BRICK_FENCE] = NetherBrickFence::class;
-			self::$list[self::POWERED_RAIL] = PoweredRail::class;
-			self::$list[self::RAIL] = Rail::class;
-
-			self::$list[self::WOODEN_PRESSURE_PLATE] = WoodenPressurePlate::class;
-			self::$list[self::STONE_PRESSURE_PLATE] = StonePressurePlate::class;
-			self::$list[self::LIGHT_WEIGHTED_PRESSURE_PLATE] = LightWeightedPressurePlate::class;
-			self::$list[self::HEAVY_WEIGHTED_PRESSURE_PLATE] = HeavyWeightedPressurePlate::class;
-			self::$list[self::REDSTONE_WIRE] = RedstoneWire::class;
-			self::$list[self::ACTIVE_REDSTONE_LAMP] = ActiveRedstoneLamp::class;
-			self::$list[self::INACTIVE_REDSTONE_LAMP] = InactiveRedstoneLamp::class;
-			self::$list[self::LIT_REDSTONE_LAMP] = LitRedstoneLamp::class;
-			self::$list[self::REDSTONE_LAMP] = RedstoneLamp::class;
-			self::$list[self::REDSTONE_TORCH] = RedstoneTorch::class;
-			self::$list[self::WOODEN_BUTTON] = WoodenButton::class;
-			self::$list[self::STONE_BUTTON] = StoneButton::class;
-			self::$list[self::LEVER] = Lever::class;
-			self::$list[self::DAYLIGHT_SENSOR] = DaylightDetector::class;
-			self::$list[self::DAYLIGHT_SENSOR_INVERTED] = DaylightDetectorInverted::class;
-			self::$list[self::NOTEBLOCK] = Noteblock::class;
-			self::$list[self::SKULL_BLOCK] = SkullBlock::class;
-			self::$list[self::NETHER_QUARTZ_ORE] = NetherQuartzOre::class;
-			self::$list[self::ACTIVATOR_RAIL] = ActivatorRail::class;
-			self::$list[self::COCOA_BLOCK] = CocoaBlock::class;
-			self::$list[self::DETECTOR_RAIL] = DetectorRail::class;
-			self::$list[self::TRIPWIRE] = Tripwire::class;
-			self::$list[self::TRIPWIRE_HOOK] = TripwireHook::class;
-			self::$list[self::ITEM_FRAME_BLOCK] = ItemFrame::class;
-			self::$list[self::DISPENSER] = Dispenser::class;
-			self::$list[self::DROPPER] = Dropper::class;
-			self::$list[self::POWERED_REPEATER_BLOCK] = PoweredRepeater::class;
-			self::$list[self::UNPOWERED_REPEATER_BLOCK] = UnpoweredRepeater::class;
-			self::$list[self::CAULDRON_BLOCK] = Cauldron::class;
-			self::$list[self::INVISIBLE_BEDROCK] = InvisibleBedrock::class;
-			self::$list[self::HOPPER_BLOCK] = Hopper::class;
-			self::$list[self::DRAGON_EGG] = DragonEgg::class;
-			self::$list[self::COMMAND_BLOCK] = CommandBlock::class;
-
-			foreach(self::$list as $id => $class){
-				if($class !== null){
-					/** @var Block $block */
-					$block = new $class();
-
-					for($data = 0; $data < 16; ++$data){
-						self::$fullList[($id << 4) | $data] = new $class($data);
-					}
-
-					self::$solid[$id] = $block->isSolid();
-					self::$transparent[$id] = $block->isTransparent();
-					self::$hardness[$id] = $block->getHardness();
-					self::$light[$id] = $block->getLightLevel();
-
-					if($block->isSolid()){
-						if($block->isTransparent()){
-							if($block instanceof Liquid or $block instanceof Ice){
-								self::$lightFilter[$id] = 2;
-							}else{
-								self::$lightFilter[$id] = 1;
-							}
-						}elseif($block instanceof SolidLight){
-							self::$lightFilter[$id] = 1;
-						}else{
-							self::$lightFilter[$id] = 15;
-						}
-					}else{
-						self::$lightFilter[$id] = 1;
-					}
-				}else{
-					self::$lightFilter[$id] = 1;
-					for($data = 0; $data < 16; ++$data){
-						self::$fullList[($id << 4) | $data] = new Block($id, $data);
-					}
-				}
-			}
-		}
+    /**
+     * @param int $id
+     * @param int $meta
+     * @param string $name
+     * @param int|null $itemId
+     */
+	public function __construct(int $id, int $meta = 0, string $name = null, int $itemId = null){
+		$this->id = $id;
+		$this->meta = $meta;
+        $this->fallbackName = $name;
+        $this->itemId = $itemId;
 	}
 
-	/**
-	 * @param int      $id
-	 * @param int      $meta
-	 * @param Position $pos
-	 *
-	 * @return Block
-	 */
-	public static function get($id, $meta = 0, Position $pos = null){
-		if($id > 0xff){
-			trigger_error("BlockID cannot be higher than 255, defaulting to 0", E_USER_NOTICE);
-			$id = 0;
-		}
-		try{
-			$block = self::$list[$id];
-			if($block !== null){
-				$block = new $block($meta);
-			}else{
-				$block = new Block($id, $meta);
-			}
-		}catch(\RuntimeException $e){
-			$block = new Block($id, $meta);
-		}
+    /**
+     * @return string
+     */
+    public function getName(){
+        return $this->fallbackName ?? "Unknown";
+    }
 
-		if($pos !== null){
-			$block->x = $pos->x;
-			$block->y = $pos->y;
-			$block->z = $pos->z;
-			$block->level = $pos->level;
-		}
+    /**
+     * @return int
+     */
+    final public function getId(){
+        return $this->id;
+    }
 
-		return $block;
-	}
+    /**
+     * Returns the ID of the item form of the block.
+     * Used for drops for blocks (some blocks such as doors have a different item ID).
+     *
+     * @return int
+     */
+    public function getItemId() : int{
+        return $this->itemId ?? $this->getId();
+    }
 
-	/**
-	 * @param int $id
-	 * @param int $meta
-	 */
-	public function __construct($id, $meta = 0){
-		$this->id = (int) $id;
-		$this->meta = (int) $meta;
-	}
+    /**
+     * @return int
+     */
+    final public function getDamage() : int{
+        return $this->meta;
+    }
 
-	/**
-	 * Places the Block, using block space and block target, and side. Returns if the block has been placed.
-	 *
-	 * @param Item   $item
-	 * @param Block  $block
-	 * @param Block  $target
-	 * @param int    $face
-	 * @param float  $fx
-	 * @param float  $fy
-	 * @param float  $fz
-	 * @param Player $player = null
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		return $this->getLevel()->setBlock($this, $this, true, true);
-	}
+    /**
+     * @param int $meta
+     */
+    final public function setDamage(int $meta){
+        if($meta < 0 or $meta > 0xf){
+            throw new \InvalidArgumentException("Block damage values must be 0-15, not $meta");
+        }
+        $this->meta = $meta;
+    }
 
-	/**
-	 * Returns if the item can be broken with an specific Item
-	 *
-	 * @param Item $item
-	 *
-	 * @return bool
-	 */
-	public function isBreakable(Item $item){
-		return true;
-	}
+    /**
+     * Bitmask to use to remove superfluous information from block meta when getting its item form or name.
+     * This defaults to -1 (don't remove any data). Used to remove rotation data and bitflags from block drops.
+     *
+     * If your block should not have any meta value when it's dropped as an item, override this to return 0 in
+     * descendent classes.
+     *
+     * @return int
+     */
+    public function getVariantBitmask() : int{
+        return -1;
+    }
 
-	public function tickRate() : int{
-		return 10;
-	}
+    /**
+     * Returns the block meta, stripped of non-variant flags.
+     * @return int
+     */
+    public function getVariant() : int{
+        return $this->meta & $this->getVariantBitmask();
+    }
 
-	/**
-	 * Do the actions needed so the block is broken with the Item
-	 *
-	 * @param Item $item
-	 *
-	 * @return mixed
-	 */
-	public function onBreak(Item $item){
-		return $this->getLevel()->setBlock($this, new Air(), true, true);
-	}
+    /**
+     * AKA: Block->isPlaceable
+     * @return bool
+     */
+    public function canBePlaced() : bool{
+        return true;
+    }
 
-	/**
-	 * Fires a block update on the Block
-	 *
-	 * @param int $type
-	 *
-	 * @return void
-	 */
-	public function onUpdate($type){
+    /**
+     * @return bool
+     */
+    public function canBeReplaced() : bool{
+        return false;
+    }
 
-	}
+    public function canBePlacedAt(Block $blockReplace, Vector3 $clickVector, int $face, bool $isClickedBlock) : bool{
+        return $blockReplace->canBeReplaced();
+    }
 
-	/**
-	 * Do actions when activated by Item. Returns if it has done anything
-	 *
-	 * @param Item   $item
-	 * @param Player $player
-	 *
-	 * @return bool
-	 */
-	public function onActivate(Item $item, Player $player = null){
-		return false;
-	}
+    /**
+     * Places the Block, using block space and block target, and side. Returns if the block has been placed.
+     *
+     * @param Item        $item
+     * @param Block       $blockReplace
+     * @param Block       $blockClicked
+     * @param int         $face
+     * @param Vector3     $clickVector
+     * @param Player|null $player
+     *
+     * @return bool
+     */
+    public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+        return $this->getLevel()->setBlock($this, $this, true, true);
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getHardness(){
-		return 10;
-	}
+    /**
+     * Returns if the block can be broken with an specific Item
+     *
+     * @param Item $item
+     *
+     * @return bool
+     */
+    public function isBreakable(Item $item) : bool{
+        return true;
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getResistance(){
-		return $this->getHardness() * 5;
-	}
+    /**
+     * @return int
+     */
+    public function getToolType() : int{
+        return BlockToolType::TYPE_NONE;
+    }
+
+    /**
+     * Returns the level of tool required to harvest this block (for normal blocks). When the tool type matches the
+     * block's required tool type, the tool must have a harvest level greater than or equal to this value to be able to
+     * successfully harvest the block.
+     *
+     * If the block requires a specific minimum tier of tiered tool, the minimum tier required should be returned.
+     * Otherwise, 1 should be returned if a tool is required, 0 if not.
+     *
+     * @see Item::getBlockToolHarvestLevel()
+     *
+     * @return int
+     */
+    public function getToolHarvestLevel() : int{
+        return 0;
+    }
+
+    /**
+     * Returns whether the specified item is the proper tool to use for breaking this block. This checks tool type and
+     * harvest level requirement.
+     *
+     * In most cases this is also used to determine whether block drops should be created or not, except in some
+     * special cases such as vines.
+     *
+     * @param Item $tool
+     *
+     * @return bool
+     */
+    public function isCompatibleWithTool(Item $tool) : bool{
+        if($this->getHardness() < 0){
+            return false;
+        }
+
+        $toolType = $this->getToolType();
+        $harvestLevel = $this->getToolHarvestLevel();
+        return $toolType === BlockToolType::TYPE_NONE or $harvestLevel === 0 or (
+                ($toolType & $tool->getBlockToolType()) !== 0 and $tool->getBlockToolHarvestLevel() >= $harvestLevel);
+    }
+
+    /**
+     * Do the actions needed so the block is broken with the Item
+     *
+     * @param Item        $item
+     * @param Player|null $player
+     *
+     * @return bool
+     */
+    public function onBreak(Item $item, Player $player = null) : bool{
+        return $this->getLevel()->setBlock($this, BlockFactory::get(Block::AIR), true, true);
+    }
+
+
+    /**
+     * Returns the seconds that this block takes to be broken using an specific Item
+     *
+     * @param Item $item
+     *
+     * @return float
+     */
+    public function getBreakTime(Item $item) : float{
+        $base = $this->getHardness();
+        if($this->isCompatibleWithTool($item)){
+            $base *= 1.5;
+        }else{
+            $base *= 5;
+        }
+
+        $efficiency = $item->getMiningEfficiency($this);
+        if($efficiency <= 0){
+            throw new \RuntimeException("Item efficiency is invalid");
+        }
+
+        $base /= $efficiency;
+
+        return $base;
+    }
+
+
+    /**
+     * Returns whether random block updates will be done on this block.
+     *
+     * @return bool
+     */
+    public function ticksRandomly() : bool{
+        return false;
+    }
+
+    /**
+     * Fires a block update on the Block
+     *
+     * @param int $type
+     *
+     * @return bool|int
+     */
+    public function onUpdate(int $type){
+        return false;
+    }
+
+    /**
+     * Do actions when activated by Item. Returns if it has done anything
+     *
+     * @param Item        $item
+     * @param Player|null $player
+     *
+     * @return bool
+     */
+    public function onActivate(Item $item, Player $player = null) : bool{
+        return false;
+    }
+
+    /**
+     * Returns a base value used to compute block break times.
+     * @return float
+     */
+    public function getHardness() : float{
+        return 10;
+    }
+
+    /**
+     * @deprecated
+     * @return float
+     */
+    public function getResistance() : float{
+        return $this->getBlastResistance();
+    }
+
+    /**
+     * Returns the block's resistance to explosions. Usually 5x hardness.
+     * @return float
+     */
+    public function getBlastResistance() : float{
+        return $this->getHardness() * 5;
+    }
+
+    /**
+     * @return float
+     */
+    public function getFrictionFactor() : float{
+        return 0.6;
+    }
+
+    /**
+     * @return int 0-15
+     */
+    public function getLightLevel() : int{
+        return 0;
+    }
+
+    /**
+     * Returns the amount of light this block will filter out when light passes through this block.
+     * This value is used in light spread calculation.
+     *
+     * @return int 0-15
+     */
+    public function getLightFilter() : int{
+        return 15;
+    }
+
+    /**
+     * Returns whether this block will diffuse sky light passing through it vertically.
+     * Diffusion means that full-strength sky light passing through this block will not be reduced, but will start being filtered below the block.
+     * Examples of this behaviour include leaves and cobwebs.
+     *
+     * Light-diffusing blocks are included by the heightmap.
+     *
+     * @return bool
+     */
+    public function diffusesSkyLight() : bool{
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isTransparent() : bool{
+        return false;
+    }
+
+    public function isSolid() : bool{
+        return true;
+    }
+
+    /**
+     * AKA: Block->isFlowable
+     * @return bool
+     */
+    public function canBeFlowedInto() : bool{
+        return false;
+    }
+
+    public function hasEntityCollision() : bool{
+        return false;
+    }
+
+    public function canPassThrough() : bool{
+        return false;
+    }
+
+    /**
+     * Returns whether entities can climb up this block.
+     * @return bool
+     */
+    public function canClimb() : bool{
+        return false;
+    }
+
+
+    public function addVelocityToEntity(Entity $entity, Vector3 $vector){
+
+    }
+
+    /**
+     * Sets the block position to a new Position object
+     *
+     * @param Position $v
+     */
+    final public function position(Position $v){
+        $this->x = (int) $v->x;
+        $this->y = (int) $v->y;
+        $this->z = (int) $v->z;
+        $this->level = $v->level;
+        $this->boundingBox = null;
+    }
+
+    /**
+     * Returns an array of Item objects to be dropped
+     *
+     * @param Item $item
+     *
+     * @return Item[]
+     */
+    public function getDrops(Item $item) : array{
+        if($this->isCompatibleWithTool($item)){
+            if($this->isAffectedBySilkTouch() and $item->hasEnchantment(Enchantment::SILK_TOUCH)){
+                return $this->getSilkTouchDrops($item);
+ 			}
+            return $this->getDropsForCompatibleTool($item);
+        }
+
+        return [];
+    }
+
+    /**
+     * Returns an array of Items to be dropped when the block is broken using the correct tool type.
+     *
+     * @param Item $item
+     *
+     * @return Item[]
+     */
+    public function getDropsForCompatibleTool(Item $item) : array{
+        return [
+            Item::get($this->getItemId(), $this->getVariant())
+        ];
+    }
+
+    /**
+     * Returns an array of Items to be dropped when the block is broken using a compatible Silk Touch-enchanted tool.
+     *
+     * @param Item $item
+     *
+     * @return Item[]
+     */
+    public function getSilkTouchDrops(Item $item) : array{
+        return [
+            Item::get($this->getItemId(), $this->getVariant())
+        ];
+    }
+
+    /**
+     * Returns whether Silk Touch enchanted tools will cause this block to drop as itself. Since most blocks drop
+     * themselves anyway, this is implicitly true.
+     *
+     * @return bool
+     */
+    public function isAffectedBySilkTouch() : bool{
+        return true;
+    }
+
+    /**
+     * Returns the item that players will equip when middle-clicking on this block.
+     * @return Item
+     */
+    public function getPickedItem() : Item{
+        return Item::get($this->getItemId(), $this->getVariant());
+    }
+
+    /**
+     * Returns the time in ticks which the block will fuel a furnace for.
+     * @return int
+     */
+    public function getFuelTime() : int{
+        return 0;
+    }
+
+    /**
+     * Returns the Block on the side $side, works like Vector3::getSide()
+     *
+     * @param int $side
+     * @param int $step
+     *
+     * @return Block
+     */
+    public function getSide($side, $step = 1){
+        if($this->isValid()){
+            return $this->getLevel()->getBlock(Vector3::getSide($side, $step));
+        }
+
+        return BlockFactory::get(Block::AIR, 0, Position::fromObject(Vector3::getSide($side, $step)));
+    }
+
+    /**
+     * Returns the 4 blocks on the horizontal axes around the block (north, south, east, west)
+     *
+     * @return Block[]
+     */
+    public function getHorizontalSides() : array{
+        return [
+            $this->getSide(Vector3::SIDE_NORTH),
+            $this->getSide(Vector3::SIDE_SOUTH),
+            $this->getSide(Vector3::SIDE_WEST),
+            $this->getSide(Vector3::SIDE_EAST)
+        ];
+    }
+
+    /**
+     * Returns the six blocks around this block.
+     *
+     * @return Block[]
+     */
+    public function getAllSides() : array{
+        return array_merge(
+            [
+                $this->getSide(Vector3::SIDE_DOWN),
+                $this->getSide(Vector3::SIDE_UP)
+            ],
+            $this->getHorizontalSides()
+        );
+    }
+
+    /**
+     * Returns a list of blocks that this block is part of. In most cases, only contains the block itself, but in cases
+     * such as double plants, beds and doors, will contain both halves.
+     *
+     * @return Block[]
+     */
+    public function getAffectedBlocks() : array{
+        return [$this];
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(){
+        return "Block[" . $this->getName() . "] (" . $this->getId() . ":" . $this->getDamage() . ")";
+    }
+
+    /**
+     * Checks for collision against an AxisAlignedBB
+     *
+     * @param AxisAlignedBB $bb
+     *
+     * @return bool
+     */
+    public function collidesWithBB(AxisAlignedBB $bb) : bool{
+        $bbs = $this->getCollisionBoxes();
+
+        foreach($bbs as $bb2){
+            if($bb->intersectsWith($bb2)){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Entity $entity
+     */
+    public function onEntityCollide(Entity $entity){
+
+    }
+
+    /**
+     * @return AxisAlignedBB[]
+     */
+    public function getCollisionBoxes() : array{
+        if($this->collisionBoxes === null){
+            $this->collisionBoxes = $this->recalculateCollisionBoxes();
+        }
+
+        return $this->collisionBoxes;
+    }
+
+    /**
+     * @return AxisAlignedBB[]
+     */
+    protected function recalculateCollisionBoxes() : array{
+        if($bb = $this->recalculateBoundingBox()){
+            return [$bb];
+        }
+
+        return [];
+    }
+
+    /**
+     * @return AxisAlignedBB|null
+     */
+    public function getBoundingBox(){
+        if($this->boundingBox === null){
+            $this->boundingBox = $this->recalculateBoundingBox();
+        }
+        return $this->boundingBox;
+    }
+
+    /**
+     * @return AxisAlignedBB|null
+     */
+    protected function recalculateBoundingBox(){
+        return new AxisAlignedBB(
+            $this->x,
+            $this->y,
+            $this->z,
+            $this->x + 1,
+            $this->y + 1,
+            $this->z + 1
+        );
+    }
+
+    /**
+     * Clears any cached precomputed objects, such as bounding boxes. This is called on block neighbour update and when
+     * the block is set into the world to remove any outdated precomputed things such as AABBs and force recalculation.
+     */
+    public function clearCaches(){
+        $this->boundingBox = null;
+        $this->collisionBoxes = null;
+    }
+
+    /**
+     * @param Vector3 $pos1
+     * @param Vector3 $pos2
+     *
+     * @return RayTraceResult|null
+     */
+    public function calculateIntercept(Vector3 $pos1, Vector3 $pos2){
+        $bbs = $this->getCollisionBoxes();
+        if(empty($bbs)){
+            return null;
+        }
+
+        /** @var RayTraceResult|null $currentHit */
+        $currentHit = null;
+        /** @var int|float $currentDistance */
+        $currentDistance = PHP_INT_MAX;
+
+        foreach($bbs as $bb){
+            $nextHit = $bb->calculateIntercept($pos1, $pos2);
+            if($nextHit === null){
+                continue;
+            }
+
+            $nextDistance = $nextHit->hitVector->distanceSquared($pos1);
+            if($nextDistance < $currentDistance){
+                $currentHit = $nextHit;
+                $currentDistance = $nextDistance;
+            }
+        }
+
+        return $currentHit;
+    }
+
+    public function setMetadata(string $metadataKey, MetadataValue $newMetadataValue){
+        if($this->getLevel() instanceof Level){
+            $this->getLevel()->getBlockMetadata()->setMetadata($this, $metadataKey, $newMetadataValue);
+        }
+    }
+
+    public function getMetadata(string $metadataKey){
+        if($this->getLevel() instanceof Level){
+            return $this->getLevel()->getBlockMetadata()->getMetadata($this, $metadataKey);
+        }
+
+        return null;
+    }
+
+    public function hasMetadata(string $metadataKey) : bool{
+        if($this->getLevel() instanceof Level){
+            return $this->getLevel()->getBlockMetadata()->hasMetadata($this, $metadataKey);
+        }
+
+        return false;
+    }
+
+    public function removeMetadata(string $metadataKey, Plugin $owningPlugin){
+        if($this->getLevel() instanceof Level){
+            $this->getLevel()->getBlockMetadata()->removeMetadata($this, $metadataKey, $owningPlugin);
+        }
+    }
 
 	/**
 	 * @return int
@@ -521,79 +738,27 @@ class Block extends Position implements BlockIds, Metadatable{
 		return false;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_NONE;
-	}
-
-	/**
-	 * @return float
-	 */
-	public function getFrictionFactor(){
-		return 0.6;
-	}
-
-	/**
-	 * @return int 0-15
-	 */
-	public function getLightLevel(){
-		return 0;
-	}
-
-	/**
-	 * AKA: Block->isPlaceable
-	 *
-	 * @return bool
-	 */
-	public function canBePlaced(){
-		return true;
-	}
-
 	public function isPlaceable(){
 		return $this->canBePlaced();
 	}
 
-	/**
-	 * AKA: Block->canBeReplaced()
-	 *
-	 * @return bool
-	 */
-	public function canBeReplaced(){
-		return false;
-	}
+	public function getMaxStackSize() : int{
+	    return 64;
+    }
 
-	/**
-	 * @return bool
-	 */
-	public function isTransparent(){
-		return false;
-	}
+	public function isNormal(){
+	    return !$this->isTransparent() && $this->isSolid() && !$this->isRedstoneSource();
+    }
 
-	public function isSolid(){
-		return true;
-	}
+    public function isRedstoneSource(){
+	    return false;
+    }
 
-	/**
-	 * AKA: Block->isFlowable
-	 *
-	 * @return bool
-	 */
-	public function canBeFlowedInto(){
-		return false;
-	}
+    public function getWeakPower(int $side) : int{
+        return 0;
+    }
 
-	/**
-	 * AKA: Block->isActivable
-	 *
-	 * @return bool
-	 */
-	public function canBeActivated() : bool{
-		return false;
-	}
-
-	public function activate(){
+	public function activate(){ // TODO : remove
 		return false;
 	}
 
@@ -603,306 +768,5 @@ class Block extends Position implements BlockIds, Metadatable{
 
 	public function isActivated(Block $from = null){
 		return false;
-	}
-
-	public function hasEntityCollision(){
-		return false;
-	}
-
-	public function canPassThrough(){
-		return false;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getName(){
-		return "Unknown";
-	}
-
-	/**
-	 * @return int
-	 */
-	final public function getId(){
-		return $this->id;
-	}
-
-	public function addVelocityToEntity(Entity $entity, Vector3 $vector){
-
-	}
-
-	/**
-	 * @return int
-	 */
-	final public function getDamage(){
-		return $this->meta;
-	}
-
-	/**
-	 * @param int $meta
-	 */
-	final public function setDamage($meta){
-		$this->meta = $meta & 0x0f;
-	}
-
-	/**
-	 * Sets the block position to a new Position object
-	 *
-	 * @param Position $v
-	 */
-	final public function position(Position $v){
-		$this->x = (int) $v->x;
-		$this->y = (int) $v->y;
-		$this->z = (int) $v->z;
-		$this->level = $v->level;
-		$this->boundingBox = null;
-	}
-
-	/**
-	 * Returns an array of Item objects to be dropped
-	 *
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		if(!isset(self::$list[$this->getId()])){ //Unknown blocks
-			return [];
-		}else{
-			return [
-				[$this->getId(), $this->getDamage(), 1],
-			];
-		}
-	}
-
-	/**
-	 * Returns the seconds that this block takes to be broken using an specific Item
-	 *
-	 * @param Item $item
-	 *
-	 * @return float
-	 */
-	public function getBreakTime(Item $item){
-		$base = $this->getHardness() * 1.5;
-		if($this->canBeBrokenWith($item)){
-			if($this->getToolType() === Tool::TYPE_SHEARS and $item->isShears()){
-				$base /= 15;
-			}elseif(
-				($this->getToolType() === Tool::TYPE_PICKAXE and ($tier = $item->isPickaxe()) !== false) or
-				($this->getToolType() === Tool::TYPE_AXE and ($tier = $item->isAxe()) !== false) or
-				($this->getToolType() === Tool::TYPE_SHOVEL and ($tier = $item->isShovel()) !== false)
-			){
-				switch($tier){
-					case Tool::TIER_WOODEN:
-						$base /= 2;
-						break;
-					case Tool::TIER_STONE:
-						$base /= 4;
-						break;
-					case Tool::TIER_IRON:
-						$base /= 6;
-						break;
-					case Tool::TIER_DIAMOND:
-						$base /= 8;
-						break;
-					case Tool::TIER_GOLD:
-						$base /= 12;
-						break;
-				}
-			}
-		}else{
-			$base *= 3.33;
-		}
-
-		if($item->isSword()){
-			$base *= 0.5;
-		}
-
-		return $base;
-	}
-
-	public function canBeBrokenWith(Item $item){
-		return $this->getHardness() !== -1;
-	}
-
-	/**
-	 * Returns the Block on the side $side, works like Vector3::side()
-	 *
-	 * @param int $side
-	 * @param int $step
-	 *
-	 * @return Block
-	 */
-	public function getSide($side, $step = 1){
-		if($this->isValid()){
-			return $this->getLevel()->getBlock(Vector3::getSide($side, $step));
-		}
-
-		return Block::get(Item::AIR, 0, Position::fromObject(Vector3::getSide($side, $step)));
-	}
-
-	/**
-	 * @return string
-	 */
-	public function __toString(){
-		return "Block[" . $this->getName() . "] (" . $this->getId() . ":" . $this->getDamage() . ")";
-	}
-
-	/**
-	 * Checks for collision against an AxisAlignedBB
-	 *
-	 * @param AxisAlignedBB $bb
-	 *
-	 * @return bool
-	 */
-	public function collidesWithBB(AxisAlignedBB $bb){
-		$bb2 = $this->getBoundingBox();
-
-		return $bb2 !== null and $bb->intersectsWith($bb2);
-	}
-
-	/**
-	 * @param Entity $entity
-	 */
-	public function onEntityCollide(Entity $entity){
-
-	}
-
-	/**
-	 * @return AxisAlignedBB
-	 */
-	public function getBoundingBox(){
-		if($this->boundingBox === null){
-			$this->boundingBox = $this->recalculateBoundingBox();
-		}
-		return $this->boundingBox;
-	}
-
-	/**
-	 * @return AxisAlignedBB
-	 */
-	protected function recalculateBoundingBox(){
-		return new AxisAlignedBB(
-			$this->x,
-			$this->y,
-			$this->z,
-			$this->x + 1,
-			$this->y + 1,
-			$this->z + 1
-		);
-	}
-
-	/**
-	 * @param Vector3 $pos1
-	 * @param Vector3 $pos2
-	 *
-	 * @return MovingObjectPosition
-	 */
-	public function calculateIntercept(Vector3 $pos1, Vector3 $pos2){
-		$bb = $this->getBoundingBox();
-		if($bb === null){
-			return null;
-		}
-
-		$v1 = $pos1->getIntermediateWithXValue($pos2, $bb->minX);
-		$v2 = $pos1->getIntermediateWithXValue($pos2, $bb->maxX);
-		$v3 = $pos1->getIntermediateWithYValue($pos2, $bb->minY);
-		$v4 = $pos1->getIntermediateWithYValue($pos2, $bb->maxY);
-		$v5 = $pos1->getIntermediateWithZValue($pos2, $bb->minZ);
-		$v6 = $pos1->getIntermediateWithZValue($pos2, $bb->maxZ);
-
-		if($v1 !== null and !$bb->isVectorInYZ($v1)){
-			$v1 = null;
-		}
-
-		if($v2 !== null and !$bb->isVectorInYZ($v2)){
-			$v2 = null;
-		}
-
-		if($v3 !== null and !$bb->isVectorInXZ($v3)){
-			$v3 = null;
-		}
-
-		if($v4 !== null and !$bb->isVectorInXZ($v4)){
-			$v4 = null;
-		}
-
-		if($v5 !== null and !$bb->isVectorInXY($v5)){
-			$v5 = null;
-		}
-
-		if($v6 !== null and !$bb->isVectorInXY($v6)){
-			$v6 = null;
-		}
-
-		$vector = $v1;
-
-		if($v2 !== null and ($vector === null or $pos1->distanceSquared($v2) < $pos1->distanceSquared($vector))){
-			$vector = $v2;
-		}
-
-		if($v3 !== null and ($vector === null or $pos1->distanceSquared($v3) < $pos1->distanceSquared($vector))){
-			$vector = $v3;
-		}
-
-		if($v4 !== null and ($vector === null or $pos1->distanceSquared($v4) < $pos1->distanceSquared($vector))){
-			$vector = $v4;
-		}
-
-		if($v5 !== null and ($vector === null or $pos1->distanceSquared($v5) < $pos1->distanceSquared($vector))){
-			$vector = $v5;
-		}
-
-		if($v6 !== null and ($vector === null or $pos1->distanceSquared($v6) < $pos1->distanceSquared($vector))){
-			$vector = $v6;
-		}
-
-		if($vector === null){
-			return null;
-		}
-
-		$f = -1;
-
-		if($vector === $v1){
-			$f = 4;
-		}elseif($vector === $v2){
-			$f = 5;
-		}elseif($vector === $v3){
-			$f = 0;
-		}elseif($vector === $v4){
-			$f = 1;
-		}elseif($vector === $v5){
-			$f = 2;
-		}elseif($vector === $v6){
-			$f = 3;
-		}
-
-		return MovingObjectPosition::fromBlock($this->x, $this->y, $this->z, $f, $vector->add($this->x, $this->y, $this->z));
-	}
-
-	public function setMetadata($metadataKey, MetadataValue $metadataValue){
-		if($this->getLevel() instanceof Level){
-			$this->getLevel()->getBlockMetadata()->setMetadata($this, $metadataKey, $metadataValue);
-		}
-	}
-
-	public function getMetadata($metadataKey){
-		if($this->getLevel() instanceof Level){
-			return $this->getLevel()->getBlockMetadata()->getMetadata($this, $metadataKey);
-		}
-
-		return null;
-	}
-
-	public function hasMetadata($metadataKey){
-		if($this->getLevel() instanceof Level){
-			$this->getLevel()->getBlockMetadata()->hasMetadata($this, $metadataKey);
-		}
-	}
-
-	public function removeMetadata($metadataKey, Plugin $plugin){
-		if($this->getLevel() instanceof Level){
-			$this->getLevel()->getBlockMetadata()->removeMetadata($this, $metadataKey, $plugin);
-		}
 	}
 }

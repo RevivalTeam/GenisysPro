@@ -1,40 +1,45 @@
 <?php
 
-/*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+/**
  *
  *
-*/
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\command\overload\CommandEnum;
+use pocketmine\command\overload\CommandParameter;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\level\Level;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
-class TimeCommand extends VanillaCommand {
+class TimeCommand extends VanillaCommand{
 
-	/**
-	 * TimeCommand constructor.
-	 *
-	 * @param $name
-	 */
 	public function __construct($name){
 		parent::__construct(
 			$name,
@@ -42,20 +47,14 @@ class TimeCommand extends VanillaCommand {
 			"%pocketmine.command.time.usage"
 		);
 		$this->setPermission("pocketmine.command.time.add;pocketmine.command.time.set;pocketmine.command.time.start;pocketmine.command.time.stop");
+
+        $this->getOverload("default")->setParameter(0, new CommandParameter("args", CommandParameter::TYPE_STRING, false, CommandParameter::FLAG_ENUM, new CommandEnum("args", ["start", "stop", "query", "set", "add"])));
+        $this->getOverload("default")->setParameter(1, new CommandParameter("time", CommandParameter::TYPE_MIXED, true, CommandParameter::FLAG_ENUM, new CommandEnum("time", ["day", "night"])));
 	}
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string        $currentAlias
-	 * @param array         $args
-	 *
-	 * @return bool
-	 */
-	public function execute(CommandSender $sender, $currentAlias, array $args){
+	public function execute(CommandSender $sender, string $currentAlias, array $args){
 		if(count($args) < 1){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
-			return false;
+            throw new InvalidCommandSyntaxException();
 		}
 
 		if($args[0] === "start"){
@@ -101,9 +100,7 @@ class TimeCommand extends VanillaCommand {
 
 
 		if(count($args) < 2){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
-			return false;
+            throw new InvalidCommandSyntaxException();
 		}
 
 		if($args[0] === "set"){
@@ -142,7 +139,7 @@ class TimeCommand extends VanillaCommand {
 			}
 			Command::broadcastCommandMessage($sender, new TranslationContainer("commands.time.added", [$value]));
 		}else{
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
+            throw new InvalidCommandSyntaxException();
 		}
 
 		return true;

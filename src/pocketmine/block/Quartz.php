@@ -1,117 +1,80 @@
 <?php
 
-/*
+/**
  *
- *  ____            _        _   __  __ _                  __  __ ____  
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \ 
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/ 
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_| 
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
- * 
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
-*/
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\block\utils\PillarRotationHelper;
+use pocketmine\item\TieredTool;
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class Quartz extends Solid {
 
-	const QUARTZ_NORMAL = 0;
-	const QUARTZ_CHISELED = 1;
-	const QUARTZ_PILLAR = 2;
-	const QUARTZ_PILLAR2 = 3;
-
-
+    const NORMAL = 0;
+    const CHISELED = 1;
+    const PILLAR = 2;
+    
 	protected $id = self::QUARTZ_BLOCK;
-
-	/**
-	 * Quartz constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
+	
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
-
-	/**
-	 * @return float
-	 */
-	public function getHardness(){
+	
+	public function getHardness() : float{
 		return 0.8;
 	}
-
-	/**
-	 * @return string
-	 */
+	
 	public function getName() : string{
 		static $names = [
-			0 => "Quartz Block",
-			1 => "Chiseled Quartz Block",
-			2 => "Quartz Pillar",
-			3 => "Quartz Block",
+			self::NORMAL => "Quartz Block",
+            self::CHISELED => "Chiseled Quartz Block",
+			self::PILLAR => "Quartz Pillar",
 		];
-		return $names[$this->meta & 0x03];
+		return $names[$this->getVariant()] ?? "Unknown";
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		if($this->meta === 1 or $this->meta === 2){
-			//Quartz pillar block and chiselled quartz have different orientations
-			$faces = [
-				0 => 0,
-				1 => 0,
-				2 => 0b1000,
-				3 => 0b1000,
-				4 => 0b0100,
-				5 => 0b0100,
-			];
-			$this->meta = ($this->meta & 0x03) | $faces[$face];
-		}
-		$this->getLevel()->setBlock($block, $this, true, true);
-		return true;
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+        if($this->meta !== self::NORMAL){
+            $this->meta = PillarRotationHelper::getMetaFromFace($this->meta, $face);
+        }
+        return $this->getLevel()->setBlock($blockReplace, $this, true, true);
 	}
-
-	/**
-	 * @return int
-	 */
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
+	
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
-
-	/**
-	 * @param Item $item
-	 *
-	 * @return array
-	 */
-	public function getDrops(Item $item) : array{
-		if($item->isPickaxe() >= 1){
-			return [
-				[Item::QUARTZ_BLOCK, $this->meta & 0x03, 1],
-			];
-		}else{
-			return [];
-		}
-	}
+	
+	public function getToolHarvestLevel(): int{
+        return TieredTool::TIER_WOODEN;
+    }
+    
+    public function getVariantBitmask(): int{
+        return 0x03;
+    }
 }

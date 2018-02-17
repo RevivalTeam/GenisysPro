@@ -1,4 +1,27 @@
 <?php
+/**
+ *
+ *
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
+ *
+ */
 
 /*
  *
@@ -14,10 +37,12 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\player;
 
@@ -27,7 +52,7 @@ use pocketmine\Player;
 /**
  * Called when a player is respawned (or first time spawned)
  */
-class PlayerRespawnEvent extends PlayerEvent {
+class PlayerRespawnEvent extends PlayerEvent{
 	public static $handlerList = null;
 
 	/** @var Position */
@@ -45,7 +70,7 @@ class PlayerRespawnEvent extends PlayerEvent {
 	/**
 	 * @return Position
 	 */
-	public function getRespawnPosition(){
+	public function getRespawnPosition() : Position{
 		return $this->position;
 	}
 

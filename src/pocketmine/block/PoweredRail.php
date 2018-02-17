@@ -1,23 +1,30 @@
 <?php
 
-/*
+/**
  *
- *  _____   _____   __   _   _   _____  __    __  _____
- * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
- * | |     | |__   |   \| | | | | |___   \ \/ /  | |___
- * | |  _  |  __|  | |\   | | | \___  \   \  /   \___  \
- * | |_| | | |___  | | \  | | |  ___| |   / /     ___| |
- * \_____/ |_____| |_|  \_| |_| /_____/  /_/     /_____/
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *    _____            _               _____
+ *   / ____|          (_)             |  __ \
+ *  | |  __  ___ _ __  _ ___ _   _ ___| |__) | __ ___
+ *  | | |_ |/ _ \ '_ \| / __| | | / __|  ___/ '__/ _ \
+ *  | |__| |  __/ | | | \__ \ |_| \__ \ |   | | | (_) |
+ *   \_____|\___|_| |_|_|___/\__, |___/_|   |_|  \___/
+ *                           __/ |
+ *                          |___/
  *
- * @author iTX Technologies
- * @link https://itxtech.org
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   @author GenisysPro
+ *   @link https://github.com/GenisysPro/GenisysPro
+ *
+ *
  *
  */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
@@ -31,40 +38,32 @@ class PoweredRail extends Rail {
 	/** @var Vector3 [] */
 	protected $connected = [];
 
-	/**
-	 * PoweredRail constructor.
-	 *
-	 * @param int $meta
-	 */
-	public function __construct($meta = 0){
-		$this->meta = $meta;//0,1,2,3,4,5
+	public function isPowered(){
+	    return true; // TODO
+    }
+
+	public function __construct(int $meta = 0){
+		$this->meta = $meta;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function getName() : string{
 		return "PoweredRail";
 	}
 
-	/**
-	 * @return bool
-	 */
 	protected function update(){
 
 		return true;
 	}
 
-	/**
-	 * @param Rail $block
-	 *
-	 * @return bool
-	 */
+    /**
+     * @param Rail $block
+     * @return bool|Vector3[]
+     */
 	public function canConnect(Rail $block){
 		if($this->distanceSquared($block) > 2){
 			return false;
 		}
-		/** @var Vector3 [] $blocks */
+		/** @var Vector3[] $blocks */
 		if(count($blocks = self::check($this)) == 2){
 			return false;
 		}
@@ -129,23 +128,11 @@ class PoweredRail extends Rail {
 					break;
 			}
 		}
-		$this->level->setBlock($this, Block::get($this->id, $this->meta), true, true);
+		$this->level->setBlock($this, BlockFactory::get($this->id, $this->meta), true, true);
 		return true;
 	}
 
-	/**
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param             $face
-	 * @param             $fx
-	 * @param             $fy
-	 * @param             $fz
-	 * @param Player|null $player
-	 *
-	 * @return bool
-	 */
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
 		$downBlock = $this->getSide(Vector3::SIDE_DOWN);
 
 		if($downBlock instanceof Rail or !$this->isBlock($downBlock)){//判断是否可以放置
@@ -209,21 +196,15 @@ class PoweredRail extends Rail {
 				break;
 		}
 
-		$this->level->setBlock($this, Block::get($this->id, $this->meta), true, true);
+		$this->level->setBlock($this, BlockFactory::get($this->id, $this->meta), true, true);
 		return true;
 	}
 
-	/**
-	 * @return float
-	 */
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.7;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canPassThrough(){
+	public function canPassThrough() : bool{
 		return true;
 	}
 }
