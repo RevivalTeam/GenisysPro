@@ -33,7 +33,7 @@ interface PluginLoader {
 	 *
 	 * @return Plugin
 	 */
-	public function loadPlugin($file);
+	public function loadPlugin(string $file);
 
 	/**
 	 * Gets the PluginDescription from the file
@@ -42,7 +42,7 @@ interface PluginLoader {
 	 *
 	 * @return PluginDescription
 	 */
-	public function getPluginDescription($file);
+	public function getPluginDescription(string $file);
 
 	/**
 	 * Returns the filename regex patterns that this loader accepts
